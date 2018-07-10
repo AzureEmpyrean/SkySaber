@@ -1,3 +1,6 @@
+//   https://github.com/thefirebrandforge/EnchantOS/blob/master/Source/Board.h
+//   https://thefirebrandforge.com/lightsaber/electronics/
+
 // -------------------------- LIBS ---------------------------
 //#include <avr/pgmspace.h>   // PROGMEM library
 #include "SD.h"
