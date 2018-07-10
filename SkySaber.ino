@@ -36,16 +36,30 @@
 
 #define DEBUG 1             // debug information in Serial (1 - allow, 0 - disallow)
 // ---------------------------- SETTINGS -------------------------------
+ 
 
-#define LED_PIN 3      // 
-#define BTN A8         // A0
-#define RGBBTN A9      // A1
-#define pinR 3         // 
-#define pinG 4         // 
-#define pinB 5         // 
+#define pinR 			  3         // 
+#define pinG 			  4         // 
+#define pinB 			  5         // 
+#define freePin6 	      6
+#define freePin7 		  7
+#define freePin8 		  8
+#define LED_PIN 		  9         //
+#define freePin10 		 10
 #define SDCARD_MOSI_PIN  11
 #define SDCARD_MISO_PIN  12
-#define SDCARD_SCK_PIN   13
+#define freePin13 		 13
+#define SDCARD_SCK_PIN   14
+#define SDCARD_CS_PIN    15
+#define freePin16 		 16
+#define freePin17 		 17
+#define freePin18  		 18
+#define freePin19  		 19
+#define freePin20  		 20
+#define freePin21  		 21
+#define BTN   		 	 22         // A0
+#define RGBBTN    		 23   		// A1
+
 #define modeCt 3
 
 
@@ -271,12 +285,12 @@ void rgbBtnTick() {
     rgb_btn_flag = 0;
     rgb_hold_flag = 0;
   }
-  // если кнопка удерживается
+
   if (rgb_btn_flag && rgbBtnState && (millis() - rgb_btn_timer > RGB_BTN_TIMEOUT) && !hold_flag) {
     rgb_hold_flag = 1;
     rgb_btn_counter = 0;
   }
-  // если кнопка была нажата несколько раз до таймаута
+
   if ((millis() - rgb_btn_timer > BTN_TIMEOUT) && (rgb_btn_counter != 0)) {
     
       if (rgb_btn_counter == 3) {               // 3 press count
@@ -307,13 +321,13 @@ void btnTick() {
     btn_flag = 0;
     hold_flag = 0;
   }
-  // если кнопка удерживается
+
   if (btn_flag && btnState && (millis() - btn_timer > BTN_TIMEOUT) && !hold_flag) {
     ls_chg_state = 1;                     // flag to change saber state (on/off)
     hold_flag = 1;
     btn_counter = 0;
   }
-  // если кнопка была нажата несколько раз до таймаута
+
   
   if ((millis() - btn_timer > BTN_TIMEOUT) && (btn_counter != 0)) {
     if (btn_counter == 3) {               // 3 press count
