@@ -12,7 +12,6 @@
 #include "SPI.h"
 #include "SerialFlash.h"
 
-
 // -------------------------- LIBS ---------------------------
 
 
@@ -39,29 +38,39 @@
 
 #define DEBUG 1             // debug information in Serial (1 - allow, 0 - disallow)
 // ---------------------------- SETTINGS -------------------------------
- 
 
-#define pinR 			  3         // 
-#define pinG 			  4         // 
-#define pinB 			  5         // 
-#define freePin6 	      6
-#define freePin7 		  7
-#define freePin8 		  8
-#define LED_PIN 		  9         //
-#define freePin10 		 10
+#define ENABLE_AMP_PIN    2
+
+#define freePin           3
+
+#define pinR 			        4         // 
+#define pinG 			        5         // 
+#define pinB 			        6         // 
+
+#define freePin7 		      7
+#define freePin8 		      8
+
+#define LED_PIN 		      9          //
+
+#define freePin10 		   10
+
 #define SDCARD_MOSI_PIN  11
 #define SDCARD_MISO_PIN  12
-#define freePin13 		 13
+
+#define freePin13 		   13
+
 #define SDCARD_SCK_PIN   14
 #define SDCARD_CS_PIN    15
-#define freePin16 		 16
-#define freePin17 		 17
-#define freePin18  		 18
-#define freePin19  		 19
-#define freePin20  		 20
-#define freePin21  		 21
-#define BTN   		 	 22         // A0
-#define RGBBTN    		 23   		// A1
+
+#define freePin16 		   16
+#define freePin17 		   17
+#define freePin18  		   18
+#define freePin19  		   19
+#define freePin20  		   20
+#define freePin21  		   21
+
+#define BTN   		 	     22         // A0
+#define RGBBTN    		   23   		// A1
 
 #define modeCt 3
 
@@ -211,7 +220,8 @@ void setup() {
 //      delay(500);
 //    }
 //  }
- 
+ pinMode(ENABLE_AMP_PIN,  INPUT_PULLUP);
+digitalWrite(ENABLE_AMP_PIN, HIGH);
 
   delay(1000);                         // 1 second to show battery level
 // setAll(0, 0, 0);
@@ -232,20 +242,12 @@ void loop() {
   //Serial.println("green");
   //randomPULSE();
   setLed(leds[NUM_LEDS - 1].r, leds[NUM_LEDS - 1].g, leds[NUM_LEDS - 1].b);
-  getFreq();
-  Serial.println(freq_f); 
-  
-  AudioNoInterrupts();
-  waveform1.frequency(200 + freq_f *20);
-  waveform1.amplitude(0.5);
-   waveform1.begin(WAVEFORM_SINE);
-  AudioInterrupts();
-  
-  //on_off_sound();
-  //btnTick();
-  //rgbBtnTick();
-  //strikeTick();
-  //swingTick();
+//  getFreq();
+  on_off_sound();
+  btnTick();
+  rgbBtnTick();
+  strikeTick();
+  swingTick();
 
 switch (mode) {
     case 0:
@@ -267,9 +269,6 @@ switch (mode) {
       cylon();
       break;
   }
-    AudioNoInterrupts();
-     
-    AudioInterrupts();
   }
 
 // --- MAIN LOOP---
