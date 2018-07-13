@@ -239,6 +239,37 @@ void setup() {
   waveform1.begin(WAVEFORM_SINE);
   //dac.analogReference(INTERNAL);
   
+  //Bluetooth begin
+  Serial1.begin(38500);
+  
+  //Bluetooth
+ 
+  
+  //Bluetooth  check incoming data and convert to command based on first character
+  
+  if (Serial1.available()) {
+      char c = Serial1.peek();
+      string readString;
+      	  if(c == 'o'){
+      		  on=!on;
+      		 /* char c = Serial1.read();
+      		  char c = Serial1.peek();
+      		  if (c == 'n'){
+      			  on=!on;
+      		  }
+      		  else if (c == 'f'){
+      			  on=!on;
+      		  }*/
+      	  }
+      	  if (c == 'c' ){
+      		  c = serial1.read();
+      		  readString = Serial1.read();
+      		  hue = readString.toInt();
+      	  }
+      	  
+   }
+  //Bluetooth
+  
 }
 
 // --- MAIN LOOP---
