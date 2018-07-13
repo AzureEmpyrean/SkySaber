@@ -43,13 +43,13 @@
 
 #define freePin           3
 
-#define pinR 			        4         // 
-#define pinG 			        5         // 
-#define pinB 			        6         // 
+#define pinR 			        6         // 
+#define pinG 			        4         // 
+#define pinB 			        5         // 
 
 #define freePin7 		      7
-#define freePin8 		      8
 
+#define ENABLE_5V_PIN     8
 #define LED_PIN 		      9          //
 
 #define freePin10 		   10
@@ -69,8 +69,10 @@
 #define freePin20  		   20
 #define freePin21  		   21
 
-#define BTN   		 	     22         // A0
-#define RGBBTN    		   23   		// A1
+#define BTN              23         // A0
+#define RGBBTN           22       // A1
+
+
 
 #define modeCt 3
 
@@ -220,8 +222,10 @@ void setup() {
 //      delay(500);
 //    }
 //  }
- pinMode(ENABLE_AMP_PIN,  INPUT_PULLUP);
-digitalWrite(ENABLE_AMP_PIN, HIGH);
+  pinMode(ENABLE_AMP_PIN,  INPUT_PULLUP);
+  digitalWrite(ENABLE_AMP_PIN, HIGH);
+  pinMode(ENABLE_5V_PIN,  INPUT_PULLUP);
+  digitalWrite(ENABLE_5V_PIN, HIGH);
 
   delay(1000);                         // 1 second to show battery level
 // setAll(0, 0, 0);
@@ -561,14 +565,14 @@ void cycle() {
     Serial.println(hue);
     hue++;
     if (hue>=256) hue=0;
-    setLed(leds[NUM_LEDS - 1].r, leds[NUM_LEDS - 1].g, leds[NUM_LEDS - 1].b);
+    //setLed(leds[NUM_LEDS - 1].r, leds[NUM_LEDS - 1].g, leds[NUM_LEDS - 1].b);
     if (!ls_state) {
       leds[NUM_LEDS - 1] = CHSV(hue, 255, 255);
 
     }
     if (ls_state) {
       fill_solid(leds, NUM_LEDS,  CHSV(hue, 255, 255) );
-      setLed(leds[NUM_LEDS - 1].r, leds[NUM_LEDS - 1].g, leds[NUM_LEDS - 1].b);
+      //setLed(leds[NUM_LEDS - 1].r, leds[NUM_LEDS - 1].g, leds[NUM_LEDS - 1].b);
       FastLED.show();
     }
        for (int i = 0; i < NUM_LEDS; i++) {
@@ -584,7 +588,7 @@ void randCycle(){
   
     hue++;
     delay(10);
-    setLed(leds[NUM_LEDS - 1].r, leds[NUM_LEDS - 1].g, leds[NUM_LEDS - 1].b);
+    //setLed(leds[NUM_LEDS - 1].r, leds[NUM_LEDS - 1].g, leds[NUM_LEDS - 1].b);
 
     if (!ls_state) leds[NUM_LEDS - 1] = CHSV(hue, 255, 255);
 
@@ -604,14 +608,14 @@ void rainbow()
 
 void setLed(uint8_t r, uint8_t g, uint8_t b) {
   // normalize the red LED - its brighter than the rest!
-  r = map(r, 0, 255, 0, 100);
+  r = map(r, 0, 255, 0, 0);
   g = map(g, 0, 255, 0, 150);
-  
+//  
   r = map(r, 0, 255, 0, BRIGHTNESS);
   g = map(g, 0, 255, 0, BRIGHTNESS);
   b = map(b, 0, 255, 0, BRIGHTNESS);
-
-  // common anode so invert!
+//
+//  // common anode so invert!
   r = map(r, 0, 255, 255, 0);
   g = map(g, 0, 255, 255, 0);
   b = map(b, 0, 255, 255, 0);
@@ -697,7 +701,7 @@ void rainbowCycle() {
   for(i=0; i< NUM_LEDS; i++) {
     c=Wheel(((i * 256 / NUM_LEDS) + j) & 255);
     setPixel(i, *c, *(c+1), *(c+2));
-    setLed(leds[NUM_LEDS - 1].r, leds[NUM_LEDS - 1].g, leds[NUM_LEDS - 1].b);
+    //setLed(leds[NUM_LEDS - 1].r, leds[NUM_LEDS - 1].g, leds[NUM_LEDS - 1].b);
   }
   FastLED.show();
 }
