@@ -336,11 +336,7 @@ void rgbBtnTick() {
       if ( rgb_btn_counter == 5) 
         {
           }
-      }
-      
-      
-      
-    
+      }    
     rgb_btn_counter = 0;
   }
 

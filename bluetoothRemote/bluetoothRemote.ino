@@ -37,7 +37,16 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
+		rgbBtnTick();
+		btnTick();
+}
 
+void tx(str send){	
+	 Serial1.write(send);
+}
+
+void rx(){
+	
 }
 
 void rgbBtnTick() {
@@ -58,15 +67,20 @@ void rgbBtnTick() {
   if (rgb_btn_flag && rgbBtnState && (millis() - rgb_btn_timer > RGB_BTN_TIMEOUT) && !hold_flag) {
     rgb_hold_flag = 1;
     rgb_btn_counter = 0;
+    tx("rgbHold");
   }
 
   if ((millis() - rgb_btn_timer > BTN_TIMEOUT) && (rgb_btn_counter != 0)) {
     
+	  if (rgb_btn_counter == 1) { 
+		  tx("");
+	  }
       if (rgb_btn_counter == 3) {               // 3 press count
-       
+       tx("rgbPressx3");
       }
       if ( rgb_btn_counter == 5) 
         {
+    	  tx("rgbPressx5");
           }
       }
       
@@ -98,13 +112,18 @@ void btnTick() {
 
   
   if ((millis() - btn_timer > BTN_TIMEOUT) && (btn_counter != 0)) {
+	  if (btn_counter == 1) {               // single press count
+	          tx("onOff");
+	        }
     if (btn_counter == 3) {               // 3 press count
         mode++;                         // change mode
         if (mode > modeCt) mode = 0;
+        serial.print
+        tx("m" + mode);
       }
       
       if (btn_counter == 5) {               // 5 press count         
-
+    	  	  	 
     }
     btn_counter = 0;
   }
