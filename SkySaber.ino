@@ -524,7 +524,7 @@ void getFreq() {
       GYR = sqrt((long)GYR);
       COMPL = ACC + GYR;
       
-         // отладка работы IMU
+
 //         Serial.print("$");
 //         Serial.print(gyroX);
 //         Serial.print(" ");
