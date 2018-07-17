@@ -177,8 +177,8 @@ char BUFFER[10];
 
 void setup() {
   delay(2000);  
-  FastLED.addLeds<WS2812B, LED_PIN, BGR>(leds, NUM_LEDS);
-  //FastLED.addLeds<WS2812B, LED_PIN, GRB>(leds, NUM_LEDS).setCorrection( TypicalLEDStrip );
+  FastLED.addLeds<WS2811, LED_PIN, BGR>(leds, 1);
+ // FastLED.addLeds<WS2812B, LED_PIN, GRB>(leds, NUM_LEDS-1);
   FastLED.setBrightness(100);  // ~40% of LED strip brightness
   Wire.begin();
   Serial.begin(9600);
@@ -232,7 +232,8 @@ void setup() {
   FastLED.setBrightness(BRIGHTNESS);   // set bright
   leds[NUM_LEDS - 1] = CHSV(hue, 255, 255);
   setLed(leds[NUM_LEDS - 1].r, leds[NUM_LEDS - 1].g, leds[NUM_LEDS - 1].b);
-
+ // leds[1] = CHSV(hue, 255, 255);
+  FastLED.show();
   AudioMemory(18);
   waveform1.frequency(440);
 //  waveform1.amplitude(0.2);
@@ -247,27 +248,28 @@ void setup() {
   
   //Bluetooth  check incoming data and convert to command based on first character
   
-  if (Serial1.available()) {
-      char c = Serial1.peek();
-      string readString;
-      	  if(c == 'o'){
-      		  on=!on;
-      		 /* char c = Serial1.read();
-      		  char c = Serial1.peek();
-      		  if (c == 'n'){
-      			  on=!on;
-      		  }
-      		  else if (c == 'f'){
-      			  on=!on;
-      		  }*/
-      	  }
-      	  if (c == 'c' ){
-      		  c = serial1.read();
-      		  readString = Serial1.read();
-      		  hue = readString.toInt();
-      	  }
-      	  
-   }
+//  if (Serial1.available()) {
+//      char c = Serial1.peek();
+//      String readString;
+//      	  if(c == 'o'){
+//      		  //on=!on;
+//           
+//      		 /* char c = Serial1.read();
+//      		  char c = Serial1.peek();
+//      		  if (c == 'n'){
+//      			  on=!on;
+//      		  }
+//      		  else if (c == 'f'){
+//      			  on=!on;
+//      		  }*/
+//      	  }
+//      	  if (c == 'c' ){
+//      		  c = serial1.read();
+//      		  readString = Serial1.read();
+//      		  hue = readString.toInt();
+//      	  }
+//      	  
+//   }
   //Bluetooth
   
 }
@@ -276,7 +278,7 @@ void setup() {
 void loop() {
   //Serial.println("green");
   //randomPULSE();
-  setLed(leds[NUM_LEDS - 1].r, leds[NUM_LEDS - 1].g, leds[NUM_LEDS - 1].b);
+ // setLed(leds[NUM_LEDS - 1].r, leds[NUM_LEDS - 1].g, leds[NUM_LEDS - 1].b);
 //  getFreq();
   on_off_sound();
   btnTick();
@@ -304,6 +306,10 @@ switch (mode) {
       cylon();
       break;
   }
+  leds[0]=CHSV(hue, 255, 255);
+  FastLED.show();
+  hue++;
+  delay(100);
   }
 
 // --- MAIN LOOP---
