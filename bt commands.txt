@@ -1,6 +1,6 @@
 on		//btn
 off		//btn
-c(num)  //rgbBtn   changes color
+h(num)  //rgbBtn   changes color
 m(num)	//btn*3    changes mode
 aud     //btn*5    turns audio on/off
 

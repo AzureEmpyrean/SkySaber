@@ -73,7 +73,7 @@ void rgbBtnTick() {
   if ((millis() - rgb_btn_timer > BTN_TIMEOUT) && (rgb_btn_counter != 0)) {
     
 	  if (rgb_btn_counter == 1) { 
-		  tx("");
+		  tx("rgbPress");
 	  }
       if (rgb_btn_counter == 3) {               // 3 press count
        tx("rgbPressx3");

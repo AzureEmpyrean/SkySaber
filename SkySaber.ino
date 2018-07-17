@@ -274,6 +274,55 @@ void setup() {
   
 }
 
+void Rx(){
+	if (Serial.available()){
+		char c = Serial.peek();
+		 String readString;
+		      	  if(c == 'o'){
+		      		  //on=!on;
+		      	  }
+		      	  if (c == 'h' ){   
+		      		  c = serial1.read();
+		      		  readString = Serial1.read();
+		      		  hue = readString.toInt();
+		      	  }
+		      	  if (c == 'r' ){   // emulate rgb button functions
+		      		  readString = Serial1.read();
+		      		  Switch (readString) {
+		      			  case 'rgbHold':
+		      				  rgb_hold_flag = 1;
+		      				  break;
+		      			  case 'rgbPress':
+		      				  rgb_btn_flag = 1;
+		      				  break;
+		      			  case 'rgbPressx3':
+		      				  rgb_btn_counter = 3;
+		      				  break;
+		      			  case 'rgbPressx5':
+		      				  rgb_btn_counter = 5;
+		      				  break;
+		      		  }
+		      	  }		      	  
+		      	  if (c == 'b' ){   // emulate regular btn functions
+		      		  readString = Serial1.read();
+					  Switch (readString) {
+							case 'btnHold':
+								hold_flag = 1;
+								break;
+							case 'btnPress':
+								btn_flag = 1;
+								break;
+							case 'btnPressx3':
+								btn_counter = 3;
+								break;
+							case 'btnPressx5':
+								btn_counter = 5;
+								break;
+												  }
+		      	  }
+	}
+}
+
 // --- MAIN LOOP---
 void loop() {
   //Serial.println("green");
@@ -285,7 +334,7 @@ void loop() {
   rgbBtnTick();
   strikeTick();
   swingTick();
-
+  Rx();
 switch (mode) {
     case 0:
       cycle();
