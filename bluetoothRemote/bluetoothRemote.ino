@@ -151,14 +151,14 @@ void rgbBtnTick() {
   }
   if ((millis() - rgb_btn_timer > BTN_TIMEOUT) && (rgb_btn_counter != 0)) {
     if (rgb_btn_counter == 1) {               // single press count
-          tx("rgbPressx1");
+          tx("rgbx1");
          }
       if (rgb_btn_counter == 3) {               // 3 press count
-       tx("rgbPressx3");
+       tx("rgbx3");
       }
       if ( rgb_btn_counter == 5) 
         {
-        tx("rgbPressx5");
+        tx("rgbx5");
           }
        
     rgb_btn_counter = 0;
@@ -189,7 +189,7 @@ void btnTick() {
   
   if ((millis() - btn_timer > BTN_TIMEOUT) && (btn_counter != 0)) {
     if (btn_counter == 1) {               // single press count
-            tx("btnPressx1");
+            tx("btnx1");
           }
     if (btn_counter == 3) {               // 3 press count
         mode++;                         // change mode
