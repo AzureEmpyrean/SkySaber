@@ -251,18 +251,19 @@ void setup() {
   
 }
 
-String readstring;
-
+String string;
+String string2;
 void Rx(){
    
   if (Serial1.available()){
-       readstring = Serial1.readStringUntil('/0');
-             readstring = readstring.trim();
+       string = Serial1.readStringUntil('\n');
+             string.trim();
+            
             // Serial.print("green");
-          //   Serial.println(readstring);
+         //  Serial.println(string2);       //this will print what is received from this tx which is rgbHold
            //  Serial.println("green");
-            if (readstring.equals("rgbHold"))
-            {Serial.println("holding");}
+        //   if (string.compareTo("rgbHold"));  // This should become true when readstring equals rgbHold
+        //    {Serial.print("rgbHolding");}    // This SHOULD print out but it does not. 
               
             }
             
@@ -306,7 +307,7 @@ void Rx(){
 
 // --- MAIN LOOP---
 void loop() {
-  
+  Serial.println(hue);
   //randomPULSE();
   getFreq();
   Rx();
@@ -315,10 +316,7 @@ void loop() {
   rgbBtnTick();
   if(ls_state)  strikeTick();
   swingTick();
-//  
-//  if (readstring == "rgbHold")
-//     Serial.print(readstring);
-  //Serial.println("green");
+
 switch (mode) {
     case 0:
       cycle();
@@ -340,7 +338,7 @@ switch (mode) {
       break;
   }
 
- readstring="";
+ string="";
   }
 
 // --- MAIN LOOP---
@@ -367,7 +365,7 @@ void rgbBtnTick() {
 
   
   rgbBtnState = !digitalRead(RGBBTN);
-  if ( (rgbBtnState && !rgb_btn_flag) || (readstring == "rgbx1") ){
+  if ( (rgbBtnState && !rgb_btn_flag) || (string == "rgbx1") ){
     //if (DEBUG) Serial.println(F("RGB BTN PRESS"));
     rgb_btn_flag = 1;
     rgb_btn_counter++;
@@ -375,19 +373,20 @@ void rgbBtnTick() {
   }
 
    
-  if ((!rgbBtnState && rgb_btn_flag) ){
+  if ((!rgbBtnState && rgb_btn_flag)){
     rgb_btn_flag = 0;
     rgb_hold_flag = 0;
   }
-     Serial.print("rgb hold flag: ");
-     Serial.println(rgb_hold_flag);
-  if ( readstring.equals("rgbHold") || (rgb_btn_flag && rgbBtnState && (millis() - rgb_btn_timer > RGB_BTN_TIMEOUT) && !hold_flag)) {
-   
+   //  Serial.print("rgb hold flag: ");
+    // Serial.println(rgb_hold_flag);
+  //if ( string.equals("rgbHold") || (rgb_btn_flag && rgbBtnState && (millis() - rgb_btn_timer > RGB_BTN_TIMEOUT) && !hold_flag)) {
+   if ( (rgb_btn_flag && rgbBtnState && (millis() - rgb_btn_timer > RGB_BTN_TIMEOUT) && !hold_flag)) {
     rgb_hold_flag = 1;
     rgb_btn_counter = 0;
     
   }
-  if ( ((millis() - rgb_btn_timer > BTN_TIMEOUT) && (rgb_btn_counter != 0)) || (readstring == "rgbx3") || (readstring == "rgbx5") ) {
+
+  if ( ((millis() - rgb_btn_timer > BTN_TIMEOUT) && (rgb_btn_counter != 0)) || (string == "rgbx3") || (string == "rgbx5") ) {
     
       if (rgb_btn_counter == 3) {               // 3 press count
        
@@ -403,7 +402,7 @@ void rgbBtnTick() {
 
 void btnTick() {  
   btnState = !digitalRead(BTN);
-  if ( (btnState && !btn_flag) || (readstring == "btnx1") ) {
+  if ( (btnState && !btn_flag) || (string == "btnx1") ) {
     if (DEBUG) Serial.println(F("BTN PRESS"));
     btn_flag = 1;
     btn_counter++;
@@ -414,23 +413,23 @@ void btnTick() {
     hold_flag = 0;
   }
 
-  if ( (btn_flag && btnState && (millis() - btn_timer > BTN_TIMEOUT) && !hold_flag) || (readstring == "btnHold")){
+  if ( (btn_flag && btnState && (millis() - btn_timer > BTN_TIMEOUT) && !hold_flag) || (string == "btnHold")){
     hold_flag = 1;
     btn_counter = 0;
   }
 
   
-  if ( ((millis() - btn_timer > BTN_TIMEOUT) && (btn_counter != 0)) || (readstring == "btnx1") || (readstring == "btnx3") || (readstring == "btnx5") ) {
+  if ( ((millis() - btn_timer > BTN_TIMEOUT) && (btn_counter != 0)) || (string == "btnx1") || (string == "btnx3") || (string == "btnx5") ) {
 
     if (btn_counter == 1) {
           ls_chg_state = 1;                     // flag to change saber state (on/off)
     }
-    if ((btn_counter == 3) || (readstring == "btnx3")){               // 3 press count
+    if ((btn_counter == 3) || (string == "btnx3")){               // 3 press count
         mode++;                         // change mode
         if (mode > modeCt) mode = 0;
       }
       
-      if ((btn_counter == 5)  || (readstring == "btnx5")) {               // 5 press count         
+      if ((btn_counter == 5)  || (string == "btnx5")) {               // 5 press count         
       mute = !mute;
         if (!mute) {
        playHum.play("HUM.wav");
@@ -631,7 +630,7 @@ void light_up() {
 
 void light_down() {
   for (int i = NUM_LEDS -1 ; i >= 0 ; i--) {
-	  	  hue=dupe[i];
+	  	 // hue=dupe[i];
           leds[i] = CHSV(hue, 255, 0);
           FastLED.show();
           delay(50);
@@ -653,7 +652,7 @@ void hit_flash() {
 
 void cycle() {
  
-  if ((readstring == "rgbHold" || rgb_hold_flag))
+  if ((string.equals("rgbHold") || rgb_hold_flag))
   {
     Serial.println(hue);
     hue++;

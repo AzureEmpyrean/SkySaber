@@ -57,13 +57,13 @@ void setup() {
 
 void loop() {
 	
-	 while (!BTconnected)
-	    {
-		 	 drv.setWaveform(0, 52);  
-		 	 drv.setWaveform(1, 0);       
-		 	 drv.go();
-	      if ( digitalRead(BTpin)==HIGH)  { BTconnected = true;};
-	    }
+//	 while (!BTconnected)
+//	    {
+//		 	 drv.setWaveform(0, 52);  
+//		 	 drv.setWaveform(1, 0);       
+//		 	 drv.go();
+//	      if ( digitalRead(BTpin)==HIGH)  { BTconnected = true;};
+//	    }
 	 
 	allowBtnTick();
     rgbBtnTick();
