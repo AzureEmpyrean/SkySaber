@@ -311,6 +311,8 @@ void loop() {
   Rx();
   if(ls_state)  strikeTick();
   swingTick();
+  
+  if (readstring == "rgbHold")
   Serial.println(readstring);
 
 switch (mode) {
