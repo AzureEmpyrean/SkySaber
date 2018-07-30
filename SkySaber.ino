@@ -260,8 +260,9 @@ void Rx(){
              readstring = readstring.trim();
   }
             
-//     if (readstring == "rgbHold"){
-//                            rgb_hold_flag = 1;
+ //    if (readstring == "rgbHold"){
+ //                           rgb_hold_flag = 1;}
+
 //                          Serial.println("rgb hold");
 //                      }
 //                        if (readstring == "rgbPressx1"){
@@ -301,16 +302,17 @@ void Rx(){
 // --- MAIN LOOP---
 void loop() {
   
-  //Serial.println("green");
   //randomPULSE();
-//  getFreq();
-  Rx();
+  getFreq();
+//  Rx();
   on_off_sound();
   btnTick();
   rgbBtnTick();
-  strikeTick();;
+  Rx();
+  if(ls_state)  strikeTick();
   swingTick();
- readstring="";
+  Serial.println(readstring);
+
 switch (mode) {
     case 0:
       cycle();
@@ -331,7 +333,7 @@ switch (mode) {
       cylon();
       break;
   }
-
+ readstring="";
   }
 
 // --- MAIN LOOP---
@@ -366,12 +368,12 @@ void rgbBtnTick() {
   }
 
    
-  if (!rgbBtnState && rgb_btn_flag) {
+  if (!rgbBtnState && rgb_btn_flag && readstring != "rgbHold"){
     rgb_btn_flag = 0;
     rgb_hold_flag = 0;
   }
 
-  if ( (rgb_btn_flag && rgbBtnState && (millis() - rgb_btn_timer > RGB_BTN_TIMEOUT) && !hold_flag) || (readstring == "rgbHold") ) {
+  if ( (readstring == "rgbHold") || (rgb_btn_flag && rgbBtnState && (millis() - rgb_btn_timer > RGB_BTN_TIMEOUT) && !hold_flag)  ) {
     rgb_hold_flag = 1;
     rgb_btn_counter = 0;
   }
@@ -642,7 +644,7 @@ void hit_flash() {
 
 void cycle() {
  
-  if (rgb_hold_flag)
+  if ((readstring == "rgbHold" || rgb_hold_flag))
   {
     Serial.println(hue);
     hue++;

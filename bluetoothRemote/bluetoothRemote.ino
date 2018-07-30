@@ -26,7 +26,7 @@ boolean BTconnected = false;
 
 // ---------------------------- SETTINGS -------------------------------
 #define BTN_TIMEOUT 800     // button hold delay, ms
-#define RGB_BTN_TIMEOUT 400     // button hold delay, ms
+#define RGB_BTN_TIMEOUT 800     // button hold delay, ms
 #define DEBUG 1             // debug information in Serial (1 - allow, 0 - disallow)
 // ---------------------------- SETTINGS -------------------------------
 #define BTN              A0         // A0
@@ -139,9 +139,16 @@ void rgbBtnTick() {
   if (rgb_btn_flag && rgbBtnState && (millis() - rgb_btn_timer > RGB_BTN_TIMEOUT) && !rgb_hold_flag) {
     rgb_hold_flag = 1;
     rgb_btn_counter = 0;
-    tx("rgbHold");
+    
   }
-
+  while(rgb_hold_flag==1){
+     tx("rgbHold");
+     rgbBtnState = !digitalRead(RGBBTN);
+     if (!rgbBtnState && rgb_btn_flag) {
+    rgb_btn_flag = 0;
+    rgb_hold_flag = 0;
+  }
+  }
   if ((millis() - rgb_btn_timer > BTN_TIMEOUT) && (rgb_btn_counter != 0)) {
     if (rgb_btn_counter == 1) {               // single press count
           tx("rgbPressx1");
