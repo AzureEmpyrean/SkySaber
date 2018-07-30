@@ -385,7 +385,7 @@ void rgbBtnTick() {
      Serial.println(rgbHold);
      Serial.print("rgb hold flag: ");
      Serial.println(rgb_hold_flag);
-  if ( rgbHold || (rgb_btn_flag && rgbBtnState && (millis() - rgb_btn_timer > RGB_BTN_TIMEOUT) && !hold_flag)) {
+  if ( readstring.equals("rgbHold") || (rgb_btn_flag && rgbBtnState && (millis() - rgb_btn_timer > RGB_BTN_TIMEOUT) && !hold_flag)) {
    
     rgb_hold_flag = 1;
     rgb_btn_counter = 0;
