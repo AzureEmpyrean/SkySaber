@@ -252,7 +252,6 @@ void setup() {
 }
 
 String readstring;
-bool rgbHold=false;
 
 void Rx(){
    
@@ -263,8 +262,7 @@ void Rx(){
           //   Serial.println(readstring);
            //  Serial.println("green");
             if (readstring.equals("rgbHold"))
-            {rgbHold=true;
-              Serial.println("holding");}
+            {Serial.println("holding");}
               
             }
             
@@ -377,12 +375,10 @@ void rgbBtnTick() {
   }
 
    
-  if ((!rgbBtnState && rgb_btn_flag) || !rgbHold){
+  if ((!rgbBtnState && rgb_btn_flag) ){
     rgb_btn_flag = 0;
     rgb_hold_flag = 0;
   }
-     Serial.print("rgbHold: ");
-     Serial.println(rgbHold);
      Serial.print("rgb hold flag: ");
      Serial.println(rgb_hold_flag);
   if ( readstring.equals("rgbHold") || (rgb_btn_flag && rgbBtnState && (millis() - rgb_btn_timer > RGB_BTN_TIMEOUT) && !hold_flag)) {
@@ -400,7 +396,6 @@ void rgbBtnTick() {
         {
           }
       }    
-      rgbHold=false;
     rgb_btn_counter = 0;
   }
 
