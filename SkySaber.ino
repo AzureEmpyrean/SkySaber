@@ -117,7 +117,7 @@ unsigned long btn_timer, rgb_btn_timer, PULSE_timer, swing_timer, swing_timeout,
 byte nowNumber;
 byte LEDcolor;  // 0 - red, 1 - green, 2 - blue, 3 - pink, 4 - yellow, 5 - ice blue
 byte nowColor, red, green, blue, redOffset, greenOffset, blueOffset;
-boolean swing_flag, swing_allow, strike_flag, mute=false;
+boolean swing_flag, swing_allow, strike_flag, mute=true;
 float voltage;
 int PULSEOffset;
 int hue = 0;
@@ -126,7 +126,7 @@ uint8_t gHue = 0;
 // ------------------------------ VARIABLES ---------------------------------
 
 // --------------------------------- SOUNDS ----------------------------------
-const char strike1[] PROGMEM = "SK1.wav";
+const char strike1[] PROGMEM = "SK1.wav"; 
 const char strike2[] PROGMEM = "SK2.wav";
 const char strike3[] PROGMEM = "SK3.wav";
 const char strike4[] PROGMEM = "SK4.wav";
@@ -236,14 +236,15 @@ void setup() {
 
   delay(1000);                         // 1 second to show battery level
   FastLED.setBrightness(BRIGHTNESS);   // set bright
- // leds[0] = CRGB::Purple;
- // leds[1] = CHSV(hue, 255, 255);
+  leds[0] = CHSV(hue, 255, 255);
   FastLED.show();
   
-  
+  dac1.analogReference(EXTERNAL);
   AudioMemory(18);
+  
   pinMode(fetPin, OUTPUT);
   digitalWrite(fetPin, HIGH);
+  
   //Bluetooth begin
   Serial1.begin(38400);
   
@@ -266,48 +267,12 @@ void Rx(){
         //    {Serial.print("rgbHolding");}    // This SHOULD print out but it does not. 
               
             }
-            
-    
-
-//                          Serial.println("rgb hold");
-//                      }
-//                        if (readstring == "rgbPressx1"){
-//                        Serial.println("rgb press");  
-//                          rgb_btn_flag = 1;
-//                      }
-//                        if (readstring == "rgbPressx3/n"){
-//                        rgb_btn_counter = 3;
-//                        Serial.println("rgb press x3");
-//                        }
-//                          if (readstring == "rgbPressx5"){
-//                          Serial.println("rgb press x5");
-//                            rgb_btn_counter = 5;
-//                          }
-//                    
-//
-//              if (readstring == "btnHold"){
-//                Serial.println("button hold");
-//                //hold_flag = 1;
-//              }
-//              if (readstring == "btnPressx1"){
-//                Serial.println("button press");
-//               // ls_chg_state = 1;
-//                btn_flag = 1;
-//            }
-//              if (readstring == "btnPressx3"){
-//                Serial.println("button press x3");
-//                //btn_counter = 3;
-//              }
-//              if (readstring == "btnPressx5"){
-//                Serial.println("button press x5");
-//                //btn_counter = 5;
-//              }
                 Serial1.flush();
   }
 
 // --- MAIN LOOP---
 void loop() {
-  Serial.println(hue);
+  FastLED.setBrightness(50);
   //randomPULSE();
   getFreq();
   Rx();
@@ -622,6 +587,7 @@ void light_up() {
   else{
   for (int i = 0; i < NUM_LEDS; i++) {
           leds[i] = CHSV(hue, 255, 255);
+          dupe[i] = CHSV(hue, 255, 255);
           FastLED.show();
           delay(25);
         }
@@ -629,7 +595,7 @@ void light_up() {
 }
 
 void light_down() {
-  for (int i = NUM_LEDS -1 ; i >= 0 ; i--) {
+  for (int i = NUM_LEDS ; i >= 1 ; i--) {
 	  	 // hue=dupe[i];
           leds[i] = CHSV(hue, 255, 0);
           FastLED.show();

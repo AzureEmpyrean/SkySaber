@@ -1,4 +1,3 @@
-//Add in bt connection waiting code
 
 
 // -------------------------- LIBS ---------------------------
@@ -20,7 +19,7 @@ int PULSEOffset;
 int hue = 0;
 int mode = 0;
 uint8_t gHue = 0;
-const byte BTpin = 4;
+const byte BTpin = 7;
 boolean BTconnected = false;
 // ------------------------------ VARIABLES ---------------------------------
 
@@ -57,13 +56,14 @@ void setup() {
 
 void loop() {
 	
-//	 while (!BTconnected)
-//	    {
-//		 	 drv.setWaveform(0, 52);  
-//		 	 drv.setWaveform(1, 0);       
-//		 	 drv.go();
-//	      if ( digitalRead(BTpin)==HIGH)  { BTconnected = true;};
-//	    }
+	 while (!BTconnected)
+	    {
+		 	 drv.setWaveform(0, 52);  
+		 	 drv.setWaveform(1, 0);       
+		 	 drv.go();
+       Serial.println("waiting for connection");
+	      if ( digitalRead(BTpin)==HIGH)  { BTconnected = true;};
+	    }
 	 
 	allowBtnTick();
     rgbBtnTick();
@@ -83,11 +83,11 @@ void haptic(int press){
 	
 	switch (press){
 	case(1): //allow button holding			
-		  drv.setWaveform(0, 0);  // play 0 
+		  drv.setWaveform(0, 52);  // play 0 
 		  drv.setWaveform(1, 0);       // end waveform
 		break;
 	case(2): //any press
-		  drv.setWaveform(0, 0);  // play 0 
+		  drv.setWaveform(0, 14);  // play 0 
 		  drv.setWaveform(1, 0);       // end waveform
 		break;
 	case(3): //any triple click
@@ -152,13 +152,16 @@ void rgbBtnTick() {
   if ((millis() - rgb_btn_timer > BTN_TIMEOUT) && (rgb_btn_counter != 0)) {
     if (rgb_btn_counter == 1) {               // single press count
           tx("rgbx1");
+          haptic(1);
          }
       if (rgb_btn_counter == 3) {               // 3 press count
        tx("rgbx3");
+       haptic(2);
       }
       if ( rgb_btn_counter == 5) 
         {
         tx("rgbx5");
+        haptic(3);
           }
        
     rgb_btn_counter = 0;
