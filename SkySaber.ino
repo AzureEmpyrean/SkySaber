@@ -254,12 +254,12 @@ void setup() {
 void loop() {
   FastLED.setBrightness(100);
   //randomPULSE();
- // getFreq();
+  getFreq();
   Rx();
   on_off_sound();
   btnTick();
   rgbBtnTick();
-  if(ls_state)  strikeTick();
+  strikeTick();
   swingTick();
 
 switch (mode) {
@@ -390,6 +390,7 @@ void on_off_sound() {
         playBoot.stop();
     } else {                         // if SkySaber is turned on
       bzzz_flag = 0;
+      delay(300);
      playBoot.play("OFF.wav");
       delay(300);
       light_down();
@@ -410,7 +411,7 @@ void on_off_sound() {
   long delta = millis() - bzzTimer;
   if ((delta > 3) && bzzz_flag && mute) {
     if (strike_flag) {
-      muteAll(6);
+     // muteAll(6);
       strike_flag = 0;
     }
     bzzTimer = millis();
@@ -452,7 +453,7 @@ void strikeTick() {
     strcpy_P(BUFFER, (char*)pgm_read_word(&(strikes[nowNumber])));
    playStrike2.play(BUFFER);
     hit_flash();
-    if (mute)
+    if (!mute)
       bzzTimer = millis() + strike_time[nowNumber] - FLASH_DELAY;
     else
       humTimer = millis() - 9000 + strike_time[nowNumber] - FLASH_DELAY;
@@ -509,13 +510,13 @@ void getFreq() {
       COMPL = ACC + GYR;
       
 
-//         Serial.print("$");
-//         Serial.print(gyroX);
-//         Serial.print(" ");
-//         Serial.print(gyroY);
-//         Serial.print(" ");
-//         Serial.print(gyroZ);
-//         Serial.println(";");
+         Serial.print("$");
+         Serial.print(gyroX);
+         Serial.print(" ");
+         Serial.print(gyroY);
+         Serial.print(" ");
+         Serial.print(gyroZ);
+         Serial.println(";");
       
       freq = (long)COMPL * COMPL / 1500;                        // parabolic tone change
       freq = constrain(freq, 18, 300);                          
