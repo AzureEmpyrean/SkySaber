@@ -66,8 +66,8 @@ void loop() {
 	    }
 	 
 	allowBtnTick();
-    rgbBtnTick();
-    btnTick();
+    //rgbBtnTick();
+   // btnTick();
 }
 
 void tx(String trans){  
@@ -245,9 +245,9 @@ void allowBtnTick() {
     allow_btn_counter = 0;
   }
 
-//    if(allow){
-//      btnTick();
-//      rgbBtnTick();
-//    }
+    if(allow){
+      btnTick();
+      rgbBtnTick();
+    }
   
 }

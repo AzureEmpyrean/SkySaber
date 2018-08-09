@@ -23,7 +23,7 @@
 #define RGB_BTN_TIMEOUT 400     // button hold delay, ms
 #define BRIGHTNESS 255      // max LED brightness (0 - 255)
 
-#define SWING_TIMEOUT 500   // timeout between swings
+#define SWING_TIMEOUT 300   // timeout between swings
 #define SWING_L_THR 150     // swing angle speed threshold
 #define SWING_THR 300       // fast swing angle speed threshold
 #define STRIKE_THR 150      // hit acceleration threshold
@@ -33,10 +33,6 @@
 #define PULSE_ALLOW 1       // blade pulsation (1 - allow, 0 - disallow)
 #define PULSE_AMPL 20       // pulse amplitude
 #define PULSE_DELAY 30      // delay between pulses
-
-#define R1 100000           // voltage divider real resistance
-#define R2 51000            // voltage divider real resistance
-#define BATTERY_SAFE 1      // battery monitoring (1 - allow, 0 - disallow)
 
 #define DEBUG 1             // debug information in Serial (1 - allow, 0 - disallow)
 // ---------------------------- SETTINGS -------------------------------
@@ -117,12 +113,15 @@ unsigned long btn_timer, rgb_btn_timer, PULSE_timer, swing_timer, swing_timeout,
 byte nowNumber;
 byte LEDcolor;  // 0 - red, 1 - green, 2 - blue, 3 - pink, 4 - yellow, 5 - ice blue
 byte nowColor, red, green, blue, redOffset, greenOffset, blueOffset;
-boolean swing_flag, swing_allow, strike_flag, mute=true;
+boolean swing_flag, swing_allow, strike_flag, mute=false;
 float voltage;
 int PULSEOffset;
 int hue = 0;
 int mode = 0;
 uint8_t gHue = 0;
+
+String string;
+String string2;
 // ------------------------------ VARIABLES ---------------------------------
 
 // --------------------------------- SOUNDS ----------------------------------
@@ -192,7 +191,6 @@ void setup() {
   pinMode(BTN, INPUT_PULLUP);
   pinMode(RGBBTN, INPUT_PULLUP);
 
-  //digitalWrite(10, HIGH);
   randomSeed(analogRead(2));    // starting point for random generator
 
     // IMU initialization
@@ -229,12 +227,12 @@ void setup() {
       delay(500);
     }
   }
+   //Enable the EnchantFX board amp and 5v logic for leds
   pinMode(ENABLE_AMP_PIN,  INPUT_PULLUP);
   digitalWrite(ENABLE_AMP_PIN, HIGH);
   pinMode(ENABLE_5V_PIN,  INPUT_PULLUP);
   digitalWrite(ENABLE_5V_PIN, HIGH);
 
-  delay(1000);                         // 1 second to show battery level
   FastLED.setBrightness(BRIGHTNESS);   // set bright
   leds[0] = CHSV(hue, 255, 255);
   FastLED.show();
@@ -242,39 +240,21 @@ void setup() {
   dac1.analogReference(EXTERNAL);
   AudioMemory(18);
   
-  pinMode(fetPin, OUTPUT);
-  digitalWrite(fetPin, HIGH);
+  pinMode(fetPin, OUTPUT);  
+  digitalWrite(fetPin, HIGH); //Turn on the power to the bluetooth module.
   
   //Bluetooth begin
   Serial1.begin(38400);
-  
   //Bluetooth
   
 }
 
-String string;
-String string2;
-void Rx(){
-   
-  if (Serial1.available()){
-       string = Serial1.readStringUntil('\n');
-             string.trim();
-            
-            // Serial.print("green");
-         //  Serial.println(string2);       //this will print what is received from this tx which is rgbHold
-           //  Serial.println("green");
-        //   if (string.compareTo("rgbHold"));  // This should become true when readstring equals rgbHold
-        //    {Serial.print("rgbHolding");}    // This SHOULD print out but it does not. 
-              
-            }
-                Serial1.flush();
-  }
 
 // --- MAIN LOOP---
 void loop() {
-  FastLED.setBrightness(50);
+  FastLED.setBrightness(100);
   //randomPULSE();
-  getFreq();
+ // getFreq();
   Rx();
   on_off_sound();
   btnTick();
@@ -308,27 +288,16 @@ switch (mode) {
 
 // --- MAIN LOOP---
 
-void muteAll(int x){ 
-  if(x == 1) playHum.stop();        //saber hum
-  if(x == 2) playStrike1.stop();    //Strike
-  if(x == 3) playStrike2.stop();    //Strike S
-  if(x == 4) playSwing1.stop();     //Swing
-  if(x == 5) playSwing2.stop();     //Swing L
-  
-  if(x == 6){
-	  playBoot.stop();
-    playHum.stop();        //saber hum
-    playStrike1.stop();    //Strike
-    playStrike2.stop();    //Strike S
-    playSwing1.stop();     //Swing
-    playSwing2.stop();     //Swing L
+void Rx(){
+   
+  if (Serial1.available()){
+       string = Serial1.readStringUntil('\n');
+             string.trim();              
+            }
+   Serial1.flush();
   }
-}
-
 
 void rgbBtnTick() {
-
-  
   rgbBtnState = !digitalRead(RGBBTN);
   if ( (rgbBtnState && !rgb_btn_flag) || (string == "rgbx1") ){
     //if (DEBUG) Serial.println(F("RGB BTN PRESS"));
@@ -336,15 +305,12 @@ void rgbBtnTick() {
     rgb_btn_counter++;
     rgb_btn_timer = millis();
   }
-
    
   if ((!rgbBtnState && rgb_btn_flag)){
     rgb_btn_flag = 0;
     rgb_hold_flag = 0;
   }
-   //  Serial.print("rgb hold flag: ");
-    // Serial.println(rgb_hold_flag);
-  //if ( string.equals("rgbHold") || (rgb_btn_flag && rgbBtnState && (millis() - rgb_btn_timer > RGB_BTN_TIMEOUT) && !hold_flag)) {
+
    if ( (rgb_btn_flag && rgbBtnState && (millis() - rgb_btn_timer > RGB_BTN_TIMEOUT) && !hold_flag)) {
     rgb_hold_flag = 1;
     rgb_btn_counter = 0;
@@ -362,7 +328,6 @@ void rgbBtnTick() {
       }    
     rgb_btn_counter = 0;
   }
-
 
 
 void btnTick() {  
@@ -383,7 +348,6 @@ void btnTick() {
     btn_counter = 0;
   }
 
-  
   if ( ((millis() - btn_timer > BTN_TIMEOUT) && (btn_counter != 0)) || (string == "btnx1") || (string == "btnx3") || (string == "btnx5") ) {
 
     if (btn_counter == 1) {
@@ -409,7 +373,7 @@ void btnTick() {
 
 void on_off_sound() {
   if (ls_chg_state) {                // if change flag
-    if (!ls_state) {                 // if GyverSaber is turned off
+    if (!ls_state) {                 // if SkySaber is turned off
         if (DEBUG) Serial.println(F("SABER ON"));
        playBoot.play("ON.wav");
         delay(200);
@@ -417,13 +381,14 @@ void on_off_sound() {
         delay(200);
         bzzz_flag = 1;
         ls_state = true;               // remember that turned on
-        //playBoot.stop();
+        
         if (!mute) {
           playHum.play("HUM.wav");
         } else {
           muteAll(6);  
         }
-    } else {                         // if GyverSaber is turned on
+        playBoot.stop();
+    } else {                         // if SkySaber is turned on
       bzzz_flag = 0;
      playBoot.play("OFF.wav");
       delay(300);
@@ -436,17 +401,16 @@ void on_off_sound() {
     ls_chg_state = 0;
   }
 
-  if (((millis() - humTimer) > 9000) && bzzz_flag && mute) {
+  if (((millis() - humTimer) > 9000) && bzzz_flag && !mute) {
     playHum.play("HUM.wav");
     humTimer = millis();
     swing_flag = 1;
     strike_flag = 0;
   }
   long delta = millis() - bzzTimer;
-  if ((delta > 3) && bzzz_flag && !mute) {
+  if ((delta > 3) && bzzz_flag && mute) {
     if (strike_flag) {
-      muteAll(1);
-      muteAll(2);
+      muteAll(6);
       strike_flag = 0;
     }
     bzzTimer = millis();
@@ -473,7 +437,7 @@ void strikeTick() {
     strcpy_P(BUFFER, (char*)pgm_read_word(&(strikes_short[nowNumber])));
   playStrike1.play(BUFFER);
     hit_flash();
-    if (!mute)
+    if (mute)
       bzzTimer = millis() + strike_s_time[nowNumber] - FLASH_DELAY;
     else
       humTimer = millis() - 9000 + strike_s_time[nowNumber] - FLASH_DELAY;
@@ -488,7 +452,7 @@ void strikeTick() {
     strcpy_P(BUFFER, (char*)pgm_read_word(&(strikes[nowNumber])));
    playStrike2.play(BUFFER);
     hit_flash();
-    if (!mute)
+    if (mute)
       bzzTimer = millis() + strike_time[nowNumber] - FLASH_DELAY;
     else
       humTimer = millis() - 9000 + strike_time[nowNumber] - FLASH_DELAY;
@@ -497,7 +461,7 @@ void strikeTick() {
 }
 
 void swingTick() {
-  if (GYR > 80 && (millis() - swing_timeout > 100) && mute) {
+  if (GYR > 80 && (millis() - swing_timeout > 100) && !mute) {
     swing_timeout = millis();
     if (((millis() - swing_timer) > SWING_TIMEOUT) && swing_flag && !strike_flag) {
       if (GYR >= SWING_THR) {      
@@ -525,7 +489,7 @@ void swingTick() {
 }
 
 void getFreq() {
- // if (ls_state) {                                               // if GyverSaber is on
+ // if (ls_state) {                                               // if SkySaber is on
     if (millis() - mpuTimer > 500) {                            
       accelgyro.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);       
 
@@ -770,3 +734,19 @@ void fadeall() {
 }
 
 
+void muteAll(int x){ 
+  if(x == 1) playHum.stop();        //saber hum
+  if(x == 2) playStrike1.stop();    //Strike
+  if(x == 3) playStrike2.stop();    //Strike S
+  if(x == 4) playSwing1.stop();     //Swing
+  if(x == 5) playSwing2.stop();     //Swing L
+  
+  if(x == 6){
+	  playBoot.stop();
+    playHum.stop();        //saber hum
+    playStrike1.stop();    //Strike
+    playStrike2.stop();    //Strike S
+    playSwing1.stop();     //Swing
+    playSwing2.stop();     //Swing L
+  }
+}
