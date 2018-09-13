@@ -126,7 +126,11 @@ uint8_t gHue = 0;
 
 String string;
 String string2;
+
+
 // ------------------------------ VARIABLES ---------------------------------
+
+
 
 // --------------------------------- SOUNDS ----------------------------------
 const char strike1[] PROGMEM = "SK1.wav"; 
@@ -181,6 +185,15 @@ const char* const swings_L[] PROGMEM  = {
 int swing_time_L[8] = {636, 441, 772, 702};
 
 char BUFFER[10];
+
+int fontCount;
+
+String folders[6];
+String font;
+String base = "/AUDIO/";
+
+
+
 // --------------------------------- SOUNDS ---------------------------------
 
 void setup() {
@@ -254,7 +267,11 @@ void setup() {
   //Bluetooth begin
   Serial1.begin(38400);
   //Bluetooth
-  
+
+
+ //SD.open("/AUDIO");
+    findFonts();
+
 }
 
 
@@ -296,6 +313,55 @@ switch (mode) {
 
 // --- MAIN LOOP---
 
+//    String folders[6];
+//    String font;
+//    String base = "/AUDIO/";
+
+
+File audio = SD.open("/AUDIO/");
+
+void findFonts() {
+  
+    while (true) {
+    File entry =  audio.openNextFile(); 
+    if (! entry) {
+      // no more files
+      break;
+    }
+    //Serial.print(entry.name());
+    if (entry.isDirectory()) {
+        fontCount++;
+    }
+    entry.close();
+  }
+
+    String fonts[fontCount];
+  
+  while (true) {
+  
+    File entry =  audio.openNextFile(); 
+    if (! entry) {
+      // no more files
+      break;
+    }
+    Serial.print(entry.name());
+    if (entry.isDirectory()) {
+        fontCount++;
+      Serial.println("/");
+        fonts[fontCount-1] = (String)entry;
+      //printDirectory(entry, numTabs + 1);
+    }
+    entry.close();
+  }
+}
+
+void changeFont(){
+
+   font = base;
+   font.concat(base);
+   
+}
+
 void Rx(){
    
   if (Serial1.available()){
@@ -322,7 +388,6 @@ void rgbBtnTick() {
    if ( (rgb_btn_flag && rgbBtnState && (millis() - rgb_btn_timer > RGB_BTN_TIMEOUT) && !hold_flag)) {
     rgb_hold_flag = 1;
     rgb_btn_counter = 0;
-    
   }
 
   if ( ((millis() - rgb_btn_timer > BTN_TIMEOUT) && (rgb_btn_counter != 0)) || (string == "rgbx3") || (string == "rgbx5") ) {
@@ -330,8 +395,8 @@ void rgbBtnTick() {
       if (rgb_btn_counter == 3) {               // 3 press count
        
       }
-      if ( rgb_btn_counter == 5) 
-        {
+      if ( rgb_btn_counter == 5){
+        
           }
       }    
     rgb_btn_counter = 0;
