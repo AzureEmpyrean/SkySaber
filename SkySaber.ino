@@ -270,13 +270,14 @@ void setup() {
 
 
  //SD.open("/AUDIO");
-    findFonts();
-
+  //  findFonts();
+  btn_counter = 1;
 }
 
 
 // --- MAIN LOOP---
 void loop() {
+  
   FastLED.setBrightness(100);
   //randomPULSE();
   getFreq();
@@ -317,50 +318,6 @@ switch (mode) {
 //    String font;
 //    String base = "/AUDIO/";
 
-
-File audio = SD.open("/AUDIO/");
-
-void findFonts() {
-  
-    while (true) {
-    File entry =  audio.openNextFile(); 
-    if (! entry) {
-      // no more files
-      break;
-    }
-    //Serial.print(entry.name());
-    if (entry.isDirectory()) {
-        fontCount++;
-    }
-    entry.close();
-  }
-
-    String fonts[fontCount];
-  
-  while (true) {
-  
-    File entry =  audio.openNextFile(); 
-    if (! entry) {
-      // no more files
-      break;
-    }
-    Serial.print(entry.name());
-    if (entry.isDirectory()) {
-        fontCount++;
-      Serial.println("/");
-        fonts[fontCount-1] = (String)entry;
-      //printDirectory(entry, numTabs + 1);
-    }
-    entry.close();
-  }
-}
-
-void changeFont(){
-
-   font = base;
-   font.concat(base);
-   
-}
 
 void Rx(){
    
@@ -565,15 +522,20 @@ void swingTick() {
 void getFreq() {
  // if (ls_state) {                                               // if SkySaber is on
     if (millis() - mpuTimer > 500) {                            
-     // accelgyro.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);       
-
+     // accelgyro.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
+     ax =accelgyro.readFloatAccelX();       
+     ay =accelgyro.readFloatAccelY();
+     az =accelgyro.readFloatAccelZ();
+     gx =accelgyro.readFloatGyroX();
+     gy =accelgyro.readFloatGyroY();
+     gz =accelgyro.readFloatGyroZ();
       // find absolute and divide on 100
-      gyroX = abs(gx / 100);
-      gyroY = abs(gy / 100);
-      gyroZ = abs(gz / 100);
-      accelX = abs(ax / 100);
-      accelY = abs(ay / 100);
-      accelZ = abs(az / 100);
+      gyroX = abs(gx );
+      gyroY = abs(gy );
+      gyroZ = abs(gz );
+      accelX = abs(ax );
+      accelY = abs(ay );
+      accelZ = abs(az );
 
       // vector sum
       ACC = sq((long)accelX) + sq((long)accelY) + sq((long)accelZ);
@@ -594,7 +556,7 @@ void getFreq() {
       freq = (long)COMPL * COMPL / 1500;                        // parabolic tone change
       freq = constrain(freq, 18, 300);                          
       freq_f = freq * k + freq_f * (1 - k);                     // smooth filter
-      mpuTimer = micros();                                     
+        mpuTimer = micros();                                     
     }
  // }
 }
