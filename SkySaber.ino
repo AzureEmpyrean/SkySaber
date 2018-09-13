@@ -1,3 +1,6 @@
+#include <SparkFunLSM6DS3.h>
+
+
 
 
 //   https://github.com/thefirebrandforge/EnchantOS/blob/master/Source/Board.h
@@ -91,8 +94,9 @@ AudioConnection          patchCord8(mixer2, dac1);
 
 CRGB leds[NUM_LEDS];
 CRGB dupe[NUM_LEDS];
-MPU6050 accelgyro;
+//MPU6050 accelgyro;
 
+LSM6DS3 accelgyro;
 
 const int chipSelect = 8;
 
@@ -193,8 +197,8 @@ void setup() {
 
   randomSeed(analogRead(2));    // starting point for random generator
 
-    // IMU initialization
-  accelgyro.initialize();
+    // For MPU6050
+ /* accelgyro.initialize();
   accelgyro.setFullScaleAccelRange(MPU6050_ACCEL_FS_16);
   accelgyro.setFullScaleGyroRange(MPU6050_GYRO_FS_250);
   if (DEBUG) {
@@ -205,6 +209,10 @@ void setup() {
       Serial.println(F("MPU6050 fail"));
     }
   }
+  */
+
+  accelgyro.begin();
+  
     // SD initialization
 
 //  if (DEBUG) {
@@ -492,7 +500,7 @@ void swingTick() {
 void getFreq() {
  // if (ls_state) {                                               // if SkySaber is on
     if (millis() - mpuTimer > 500) {                            
-      accelgyro.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);       
+     // accelgyro.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);       
 
       // find absolute and divide on 100
       gyroX = abs(gx / 100);
