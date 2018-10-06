@@ -16,9 +16,9 @@
 
 
 // ---------------------------- SETTINGS -------------------------------
-#define NUM_LEDS 45         // number of leds
+#define NUM_LEDS 300         // number of leds
 #define BTN_TIMEOUT 800     // button hold delay, ms
-#define RGB_BTN_TIMEOUT 400     // button hold delay, ms
+#define RGB_BTN_TIMEOUT 800     // button hold delay, ms
 #define BRIGHTNESS 255      // max LED brightness (0 - 255)
 
 #define SWING_TIMEOUT 300   // timeout between swings
@@ -125,75 +125,13 @@ String string2;
 
 // ------------------------------ VARIABLES ---------------------------------
 
-
-
-// --------------------------------- SOUNDS ----------------------------------
-const char strike1[] PROGMEM = "SK1.wav"; 
-const char strike2[] PROGMEM = "SK2.wav";
-const char strike3[] PROGMEM = "SK3.wav";
-const char strike4[] PROGMEM = "SK4.wav";
-const char strike5[] PROGMEM = "SK5.wav";
-const char strike6[] PROGMEM = "SK6.wav";
-const char strike7[] PROGMEM = "SK7.wav";
-const char strike8[] PROGMEM = "SK8.wav";
-
-const char* const strikes[] PROGMEM  = {
-  strike1, strike2, strike3, strike4, strike5, strike6, strike7, strike8
-};
-
-int strike_time[8] = {779, 563, 687, 702, 673, 661, 666, 635};
-
-const char strike_s1[] PROGMEM = "SKS1.wav";
-const char strike_s2[] PROGMEM = "SKS2.wav";
-const char strike_s3[] PROGMEM = "SKS3.wav";
-const char strike_s4[] PROGMEM = "SKS4.wav";
-const char strike_s5[] PROGMEM = "SKS5.wav";
-const char strike_s6[] PROGMEM = "SKS6.wav";
-const char strike_s7[] PROGMEM = "SKS7.wav";
-const char strike_s8[] PROGMEM = "SKS8.wav";
-
-const char* const strikes_short[] PROGMEM = {
-  strike_s1, strike_s2, strike_s3, strike_s4,
-  strike_s5, strike_s6, strike_s7, strike_s8
-};
-int strike_s_time[8] = {270, 167, 186, 250, 252, 255, 250, 238};
-
-const char swing1[] PROGMEM = "SWS1.wav";
-const char swing2[] PROGMEM = "SWS2.wav";
-const char swing3[] PROGMEM = "SWS3.wav";
-const char swing4[] PROGMEM = "SWS4.wav";
-const char swing5[] PROGMEM = "SWS5.wav";
-
-const char* const swings[] PROGMEM  = {
-  swing1, swing2, swing3, swing4, swing5
-};
-int swing_time[8] = {389, 372, 360, 366, 337};
-
-const char swingL1[] PROGMEM = "SWL1.wav";
-const char swingL2[] PROGMEM = "SWL2.wav";
-const char swingL3[] PROGMEM = "SWL3.wav";
-const char swingL4[] PROGMEM = "SWL4.wav";
-
-const char* const swings_L[] PROGMEM  = {
-  swingL1, swingL2, swingL3, swingL4
-};
-int swing_time_L[8] = {636, 441, 772, 702};
-
-char BUFFER[10];
-
-int fontCount;
-
-String folders[6];
-String font;
-String base = "/AUDIO/";
-
-
-
-// --------------------------------- SOUNDS ---------------------------------
+void bootCheck(){
+  
+}
 
 void setup() {
   delay(2000);  
-  FastLED.addLeds<WS2811, LED_PIN, GRB>(leds, 0,1);
+  FastLED.addLeds<WS2811, LED_PIN, GRB>(leds, 0,3);
   FastLED.addLeds<WS2812B, LED_PIN2, RGB>(leds, 1, NUM_LEDS);
   FastLED.setBrightness(100);  // ~40% of LED strip brightness
   Wire.begin();
@@ -234,15 +172,17 @@ void setup() {
   SPI.setSCK(SDCARD_SCK_PIN);
   SPI.setMISO(SDCARD_MISO_PIN);
   
-   if (!(SD.begin(15))) {
-    // stop here, but print a message repetitively
-    while (1) {
-      leds[1] = CHSV(240, 255, 255);
-          FastLED.show();
-      Serial.println("Unable to access the SD card");
-      delay(500);
-    }
-  }
+//   if (!(SD.begin(15))) {
+//    // stop here, but print a message repetitively
+//    while (1) {
+//      leds[1] = CHSV(240, 255, 255);
+//          FastLED.show();
+//      Serial.println("Unable to access the SD card");
+//      delay(500);
+//    }
+//  }
+
+  
    //Enable the EnchantFX board amp and 5v logic for leds
   pinMode(ENABLE_AMP_PIN,  INPUT_PULLUP);
   digitalWrite(ENABLE_AMP_PIN, HIGH);
@@ -250,14 +190,14 @@ void setup() {
   digitalWrite(ENABLE_5V_PIN, HIGH);
 
   FastLED.setBrightness(BRIGHTNESS);   // set bright
-  leds[0] = CHSV(hue, 255, 255);
+  //leds[0] = CHSV(hue, 255, 255);
   FastLED.show();
   
   dac1.analogReference(EXTERNAL);
   AudioMemory(18);
   
-  pinMode(fetPin, OUTPUT);  
-  digitalWrite(fetPin, HIGH); //Turn on the power to the bluetooth module.
+//  pinMode(fetPin, OUTPUT);  
+//  digitalWrite(fetPin, HIGH); //Turn on the power to the bluetooth module.
   
   //Bluetooth begin
   Serial1.begin(38400);
@@ -266,105 +206,105 @@ void setup() {
 
  //SD.open("/AUDIO");
   //  findFonts();
-  btn_counter = 1;
-}
 
+}
 
 // --- MAIN LOOP---
 void loop() {
   
   FastLED.setBrightness(100);
   //randomPULSE();
-  getFreq();
-  Rx();
-  on_off_sound();
+
   btnTick();
   rgbBtnTick();
-  strikeTick();
-  swingTick();
 
-switch (mode) {
-    case 0:
-      cycle();
-      break;
-    case 1:
-      randCycle();
-      break;
-    case 2:
-      rainbowCycle();
-      break;
-    case 3:
-      rainbow();
-      break;
-    case 4:
-      sinelon();
-      break;
-   case 5:
-      cylon();
-      break;
-  }
+//switch (mode) {
+//    case 0:
+//      cycle();
+//      break;
+//    case 1:
+//      randCycle();
+//      break;
+//    case 2:
+//      rainbowCycle();
+//      break;
+//    case 3:
+//      rainbow();
+//      break;
+//    case 4:
+//      sinelon();
+//      break;
+//   case 5:
+//      cylon();
+//      break;
+//  }
 
  string="";
   }
 
 // --- MAIN LOOP---
 
-//    String folders[6];
-//    String font;
-//    String base = "/AUDIO/";
-
-
-void Rx(){
-   
-  if (Serial1.available()){
-       string = Serial1.readStringUntil('\n');
-             string.trim();              
-            }
-   Serial1.flush();
-  }
-
 void rgbBtnTick() {
   rgbBtnState = !digitalRead(RGBBTN);
-  if ( (rgbBtnState && !rgb_btn_flag) || (string == "rgbx1") ){
-    //if (DEBUG) Serial.println(F("RGB BTN PRESS"));
+  if ( (rgbBtnState && !rgb_btn_flag && (millis() - rgb_btn_timer > RGB_BTN_TIMEOUT)  ) || (string == "rgbx1") ){
+     if (DEBUG) Serial.println(F("This is pin 22******"));
     rgb_btn_flag = 1;
     rgb_btn_counter++;
     rgb_btn_timer = millis();
+       if (DEBUG) Serial.print(("rgb counter: "));
+   if (DEBUG) Serial.println((rgb_btn_counter ));
   }
    
   if ((!rgbBtnState && rgb_btn_flag)){
     rgb_btn_flag = 0;
     rgb_hold_flag = 0;
+    if (DEBUG) Serial.println(("rgb counter is reset"));
   }
 
    if ( (rgb_btn_flag && rgbBtnState && (millis() - rgb_btn_timer > RGB_BTN_TIMEOUT) && !hold_flag)) {
     rgb_hold_flag = 1;
     rgb_btn_counter = 0;
+     //  if (DEBUG) Serial.println(("rgb counter is reset"));
   }
+  
 
-  if ( ((millis() - rgb_btn_timer > BTN_TIMEOUT) && (rgb_btn_counter != 0)) || (string == "rgbx3") || (string == "rgbx5") ) {
-    
+   
+  if ( ((millis() - rgb_btn_timer > RGB_BTN_TIMEOUT) && (rgb_btn_counter != 0)) || (string == "rgbx1") || (string == "rgbx3") || (string == "rgbx5") ) {
+           if (DEBUG) Serial.print(("rgb counter: "));
+   if (DEBUG) Serial.println((rgb_btn_counter ));
+   
+      if (rgb_btn_counter == 1) {
+      Serial.println("this should light up");
+            hue = 100;
+            fill_solid(leds, NUM_LEDS,  CHSV(hue, 255, 255) );
+           FastLED.show();
+           delay(1000);
+           hue = 155;
+           fill_solid(leds, NUM_LEDS,  CHSV(hue, 255, 255) );
+           FastLED.show();            
+          }
       if (rgb_btn_counter == 3) {               // 3 press count
        
-      }
+          }
       if ( rgb_btn_counter == 5){
         
           }
+       rgb_btn_counter = 0;
       }    
-    rgb_btn_counter = 0;
+
   }
 
 
 void btnTick() {  
   btnState = !digitalRead(BTN);
-  if ( (btnState && !btn_flag) || (string == "btnx1") ) {
-    if (DEBUG) Serial.println(F("BTN PRESS"));
+  if ( (btnState && !btn_flag && (millis() - btn_timer > BTN_TIMEOUT)  ) || (string == "btnx1") ) {
+    if (DEBUG) Serial.println(F("This is pin 23@@@@"));
     btn_flag = 1;
     btn_counter++;
     btn_timer = millis();
   }
   if (!btnState && btn_flag) {
-    btn_flag = 0;
+    btn_flag = 0; 
     hold_flag = 0;
   }
 
@@ -377,6 +317,7 @@ void btnTick() {
 
     if (btn_counter == 1) {
           ls_chg_state = 1;                     // flag to change saber state (on/off)
+          Serial.println(ls_chg_state);
     }
     if ((btn_counter == 3) || (string == "btnx3")){               // 3 press count
         mode++;                         // change mode
@@ -388,173 +329,13 @@ void btnTick() {
         if (!mute) {
        playHum.play("HUM.wav");
         } else {
-        muteAll(6);
+     //   muteAll(6);
         }
     }
     btn_counter = 0;
   }
 }
 
-
-void on_off_sound() {
-  if (ls_chg_state) {                // if change flag
-    if (!ls_state) {                 // if SkySaber is turned off
-        if (DEBUG) Serial.println(F("SABER ON"));
-       playBoot.play("ON.wav");
-        delay(200);
-        light_up();
-        delay(200);
-        bzzz_flag = 1;
-        ls_state = true;               // remember that turned on
-        
-        if (!mute) {
-          playHum.play("HUM.wav");
-        } else {
-          muteAll(6);  
-        }
-        playBoot.stop();
-    } else {                         // if SkySaber is turned on
-      bzzz_flag = 0;
-      delay(300);
-     playBoot.play("OFF.wav");
-      delay(300);
-      light_down();
-      delay(300);
-      muteAll(6);
-    if (DEBUG) Serial.println(F("SABER OFF"));
-      ls_state = false;      
-    }
-    ls_chg_state = 0;
-  }
-
-  if (((millis() - humTimer) > 9000) && bzzz_flag && !mute) {
-    playHum.play("HUM.wav");
-    humTimer = millis();
-    swing_flag = 1;
-    strike_flag = 0;
-  }
-  long delta = millis() - bzzTimer;
-  if ((delta > 3) && bzzz_flag && mute) {
-    if (strike_flag) {
-     // muteAll(6);
-      strike_flag = 0;
-    }
-    bzzTimer = millis();
-  }
-}
-
-void randomPULSE() {
-  if (PULSE_ALLOW && ls_state && (millis() - PULSE_timer > PULSE_DELAY)) {
-    PULSE_timer = millis();
-    PULSEOffset = PULSEOffset * k + random(-PULSE_AMPL, PULSE_AMPL) * (1 - k);
-    if (nowColor == 0) PULSEOffset = constrain(PULSEOffset, -15, 5);
-    redOffset = constrain(red + PULSEOffset, 0, 255);
-    greenOffset = constrain(green + PULSEOffset, 0, 255);
-    blueOffset = constrain(blue + PULSEOffset, 0, 255);
-    setAll(redOffset, greenOffset, blueOffset);
-  }
-}
-
-void strikeTick() {
-  if ((ACC > STRIKE_THR) && (ACC < STRIKE_S_THR)) {
-  //  if (!mute) noToneAC();
-    nowNumber = random(8);
-
-    strcpy_P(BUFFER, (char*)pgm_read_word(&(strikes_short[nowNumber])));
-  playStrike1.play(BUFFER);
-    hit_flash();
-    if (mute)
-      bzzTimer = millis() + strike_s_time[nowNumber] - FLASH_DELAY;
-    else
-      humTimer = millis() - 9000 + strike_s_time[nowNumber] - FLASH_DELAY;
-    strike_flag = 1;
-  }
-  
-  
-  if (ACC >= STRIKE_S_THR) {
- //   if (!mute) noToneAC();
-    nowNumber = random(8);
-
-    strcpy_P(BUFFER, (char*)pgm_read_word(&(strikes[nowNumber])));
-   playStrike2.play(BUFFER);
-    hit_flash();
-    if (!mute)
-      bzzTimer = millis() + strike_time[nowNumber] - FLASH_DELAY;
-    else
-      humTimer = millis() - 9000 + strike_time[nowNumber] - FLASH_DELAY;
-    strike_flag = 1;
-  }
-}
-
-void swingTick() {
-  if (GYR > 80 && (millis() - swing_timeout > 100) && !mute) {
-    swing_timeout = millis();
-    if (((millis() - swing_timer) > SWING_TIMEOUT) && swing_flag && !strike_flag) {
-      if (GYR >= SWING_THR) {      
-        nowNumber = random(5);          
-
-        strcpy_P(BUFFER, (char*)pgm_read_word(&(swings[nowNumber])));
-        playSwing1.play(BUFFER);               
-        humTimer = millis() - 9000 + swing_time[nowNumber];
-        swing_flag = 0;
-        swing_timer = millis();
-        swing_allow = 0;
-      }
-      if ((GYR > SWING_L_THR) && (GYR < SWING_THR)) {
-        nowNumber = random(5);            
-
-        strcpy_P(BUFFER, (char*)pgm_read_word(&(swings_L[nowNumber])));
-      playSwing2.play(BUFFER);              
-        humTimer = millis() - 9000 + swing_time_L[nowNumber];
-        swing_flag = 0;
-        swing_timer = millis();
-        swing_allow = 0;
-      }
-    }
-  }
-}
-
-void getFreq() {
- // if (ls_state) {                                               // if SkySaber is on
-    if (millis() - mpuTimer > 500) {                            
-     // accelgyro.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
-     ax =accelgyro.readFloatAccelX();       
-     ay =accelgyro.readFloatAccelY();
-     az =accelgyro.readFloatAccelZ();
-     gx =accelgyro.readFloatGyroX();
-     gy =accelgyro.readFloatGyroY();
-     gz =accelgyro.readFloatGyroZ();
-      // find absolute and divide on 100
-      gyroX = abs(gx );
-      gyroY = abs(gy );
-      gyroZ = abs(gz );
-      accelX = abs(ax );
-      accelY = abs(ay );
-      accelZ = abs(az );
-
-      // vector sum
-      ACC = sq((long)accelX) + sq((long)accelY) + sq((long)accelZ);
-      ACC = sqrt(ACC);
-      GYR = sq((long)gyroX) + sq((long)gyroY) + sq((long)gyroZ);
-      GYR = sqrt((long)GYR);
-      COMPL = ACC + GYR;
-      
-
-         Serial.print("$");
-         Serial.print(gyroX);
-         Serial.print(" ");
-         Serial.print(gyroY);
-         Serial.print(" ");
-         Serial.print(gyroZ);
-         Serial.println(";");
-      
-      freq = (long)COMPL * COMPL / 1500;                        // parabolic tone change
-      freq = constrain(freq, 18, 300);                          
-      freq_f = freq * k + freq_f * (1 - k);                     // smooth filter
-        mpuTimer = micros();                                     
-    }
- // }
-}
 
 void setPixel(int Pixel, byte red, byte green, byte blue) {
   leds[Pixel].r = red;
@@ -572,12 +353,12 @@ void setAll(byte red, byte green, byte blue) {
 void light_up() {
 
   if (mode==3){
-	  for (int i = 0; i < NUM_LEDS; i++) {
-		  	  	// hue=dupe[i];
-	            leds[i] = dupe[i];
-	            FastLED.show();
-	            delay(25);
-	          }
+    for (int i = 0; i < NUM_LEDS; i++) {
+            // hue=dupe[i];
+              leds[i] = dupe[i];
+              FastLED.show();
+              delay(25);
+            }
   }
   else{
   for (int i = 0; i < NUM_LEDS; i++) {
@@ -591,7 +372,7 @@ void light_up() {
 
 void light_down() {
   for (int i = NUM_LEDS ; i >= 1 ; i--) {
-	  	 // hue=dupe[i];
+       // hue=dupe[i];
           leds[i] = CHSV(hue, 255, 0);
           FastLED.show();
           delay(50);
@@ -764,20 +545,3 @@ void fadeall() {
   }
 }
 
-
-void muteAll(int x){ 
-  if(x == 1) playHum.stop();        //saber hum
-  if(x == 2) playStrike1.stop();    //Strike
-  if(x == 3) playStrike2.stop();    //Strike S
-  if(x == 4) playSwing1.stop();     //Swing
-  if(x == 5) playSwing2.stop();     //Swing L
-  
-  if(x == 6){
-	  playBoot.stop();
-    playHum.stop();        //saber hum
-    playStrike1.stop();    //Strike
-    playStrike2.stop();    //Strike S
-    playSwing1.stop();     //Swing
-    playSwing2.stop();     //Swing L
-  }
-}
