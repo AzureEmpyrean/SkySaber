@@ -17,7 +17,7 @@
 
 // ---------------------------- SETTINGS -------------------------------
 #define NUM_LEDS 45         // number of leds
-#define BTN_TIMEOUT 800     // button hold delay, ms
+#define BTN_TIMEOUT 600     // button hold delay, ms
 #define RGB_BTN_TIMEOUT 400     // button hold delay, ms
 #define BRIGHTNESS 255      // max LED brightness (0 - 255)
 
@@ -121,7 +121,7 @@ uint8_t gHue = 0;
 
 String string;
 String string2;
-
+int btn=0, rgb=0, bootCheck=1;
 
 // ------------------------------ VARIABLES ---------------------------------
 
@@ -256,18 +256,51 @@ void setup() {
   dac1.analogReference(EXTERNAL);
   AudioMemory(18);
   
-  pinMode(fetPin, OUTPUT);  
-  digitalWrite(fetPin, HIGH); //Turn on the power to the bluetooth module.
+ // pinMode(fetPin, OUTPUT);  
+ // digitalWrite(fetPin, HIGH); //Turn on the power to the bluetooth module.
   
   //Bluetooth begin
   Serial1.begin(38400);
   //Bluetooth
 
+/////////Bootup Checks
+    for (int i = 0; i < NUM_LEDS; i++) {
+          leds[i] = CHSV(hue, 255, 255);
+          dupe[i] = CHSV(hue, 255, 255);
+          FastLED.show();
+          delay(25);
+        }
+//check bluetooth
+    do{  
+        Rx();   
+        btnTick();
+        rgbBtnTick();        
+      }while(btn==0 && rgb == 0);
+btn=0; rgb =0;
 
- //SD.open("/AUDIO");
-  //  findFonts();
-  btn_counter = 1;
+        
+        
+//check button functionality
+    do{       
+        btnTick();
+        rgbBtnTick();        
+      }while(btn==0 && rgb == 0);
+btn=0; rgb =0;
+
+////check gyro      
+    do{       
+        getFreq();
+        btnTick();
+        rgbBtnTick();
+        strikeTick();
+        swingTick();        
+      }while(btn==0 && rgb == 0);
+btn=0; rgb =0;
+
+    bootCheck =0;
 }
+
+
 
 
 // --- MAIN LOOP---
@@ -330,6 +363,10 @@ void rgbBtnTick() {
     rgb_btn_flag = 1;
     rgb_btn_counter++;
     rgb_btn_timer = millis();
+
+    if(bootCheck =1){
+      hit_flash();
+    }
   }
    
   if ((!rgbBtnState && rgb_btn_flag)){
@@ -340,6 +377,9 @@ void rgbBtnTick() {
    if ( (rgb_btn_flag && rgbBtnState && (millis() - rgb_btn_timer > RGB_BTN_TIMEOUT) && !hold_flag)) {
     rgb_hold_flag = 1;
     rgb_btn_counter = 0;
+    if(bootCheck =1){
+      rgb=1;
+    }
   }
 
   if ( ((millis() - rgb_btn_timer > BTN_TIMEOUT) && (rgb_btn_counter != 0)) || (string == "rgbx3") || (string == "rgbx5") ) {
@@ -350,8 +390,9 @@ void rgbBtnTick() {
       if ( rgb_btn_counter == 5){
         
           }
+        rgb_btn_counter = 0;
       }    
-    rgb_btn_counter = 0;
+
   }
 
 
@@ -371,12 +412,19 @@ void btnTick() {
   if ( (btn_flag && btnState && (millis() - btn_timer > BTN_TIMEOUT) && !hold_flag) || (string == "btnHold")){
     hold_flag = 1;
     btn_counter = 0;
+    
+    if(bootCheck =1){
+      btn=1;
+    }
   }
 
   if ( ((millis() - btn_timer > BTN_TIMEOUT) && (btn_counter != 0)) || (string == "btnx1") || (string == "btnx3") || (string == "btnx5") ) {
 
     if (btn_counter == 1) {
           ls_chg_state = 1;                     // flag to change saber state (on/off)
+          if(bootCheck =1){
+              hit_flash();
+                 }
     }
     if ((btn_counter == 3) || (string == "btnx3")){               // 3 press count
         mode++;                         // change mode
