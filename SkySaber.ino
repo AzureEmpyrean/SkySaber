@@ -16,7 +16,7 @@
 
 
 // ---------------------------- SETTINGS -------------------------------
-#define NUM_LEDS 45         // number of leds
+#define NUM_LEDS 146         // number of leds
 #define BTN_TIMEOUT 600     // button hold delay, ms
 #define RGB_BTN_TIMEOUT 400     // button hold delay, ms
 #define BRIGHTNESS 255      // max LED brightness (0 - 255)
@@ -121,7 +121,7 @@ uint8_t gHue = 0;
 
 String string;
 String string2;
-int btn=0, rgb=0, bootCheck=1;
+int btn=0, rgb=0, bootCheck=0;
 
 // ------------------------------ VARIABLES ---------------------------------
 
@@ -236,12 +236,12 @@ void setup() {
   
    if (!(SD.begin(15))) {
     // stop here, but print a message repetitively
-    while (1) {
-      leds[1] = CHSV(240, 255, 255);
-          FastLED.show();
-      Serial.println("Unable to access the SD card");
-      delay(500);
-    }
+//    while (1) {
+//      leds[1] = CHSV(240, 255, 255);
+//          FastLED.show();
+//      Serial.println("Unable to access the SD card");
+//      delay(500);
+//    }
   }
    //Enable the EnchantFX board amp and 5v logic for leds
   pinMode(ENABLE_AMP_PIN,  INPUT_PULLUP);
@@ -264,6 +264,7 @@ void setup() {
   //Bluetooth
 
 /////////Bootup Checks
+/*
     for (int i = 0; i < NUM_LEDS; i++) {
           leds[i] = CHSV(hue, 255, 255);
           dupe[i] = CHSV(hue, 255, 255);
@@ -298,6 +299,7 @@ btn=0; rgb =0;
 btn=0; rgb =0;
 
     bootCheck =0;
+    */
 }
 
 
@@ -364,7 +366,7 @@ void rgbBtnTick() {
     rgb_btn_counter++;
     rgb_btn_timer = millis();
 
-    if(bootCheck =1){
+    if(bootCheck==1){
       hit_flash();
     }
   }
@@ -377,7 +379,7 @@ void rgbBtnTick() {
    if ( (rgb_btn_flag && rgbBtnState && (millis() - rgb_btn_timer > RGB_BTN_TIMEOUT) && !hold_flag)) {
     rgb_hold_flag = 1;
     rgb_btn_counter = 0;
-    if(bootCheck =1){
+    if(bootCheck==1){
       rgb=1;
     }
   }
@@ -413,7 +415,7 @@ void btnTick() {
     hold_flag = 1;
     btn_counter = 0;
     
-    if(bootCheck =1){
+    if(bootCheck==1){
       btn=1;
     }
   }
@@ -422,7 +424,7 @@ void btnTick() {
 
     if (btn_counter == 1) {
           ls_chg_state = 1;                     // flag to change saber state (on/off)
-          if(bootCheck =1){
+          if(bootCheck ==1){
               hit_flash();
                  }
     }
@@ -632,7 +634,7 @@ void light_up() {
           leds[i] = CHSV(hue, 255, 255);
           dupe[i] = CHSV(hue, 255, 255);
           FastLED.show();
-          delay(25);
+          delay(10);
         }
   }
 }
@@ -642,7 +644,7 @@ void light_down() {
 	  	 // hue=dupe[i];
           leds[i] = CHSV(hue, 255, 0);
           FastLED.show();
-          delay(50);
+          delay(20);
         }
 }
 
@@ -678,7 +680,7 @@ void cycle() {
           dupe[i] = leds[i]; 
         }
      FastLED.show();
-    delay(80);
+    delay(60);
   }
 
 }
