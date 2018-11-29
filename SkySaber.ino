@@ -1,3 +1,6 @@
+#include <Audio.h>
+
+
 //   https://github.com/thefirebrandforge/EnchantOS/blob/master/Source/Board.h
 //   https://thefirebrandforge.com/lightsaber/electronics/
 
@@ -8,10 +11,13 @@
 #include "I2Cdev.h"
 #include "MPU6050.h"
 #include "FastLED.h"        // addressable LED library
-#include "Audio.h"
+//#include "Audio.h"
 #include "SPI.h"
 #include "SerialFlash.h"
 #include <SparkFunLSM6DS3.h>
+
+
+
 // -------------------------- LIBS ---------------------------
 
 
@@ -60,7 +66,7 @@
 #define freePin20        20
 #define fetPin           21
 
-#define BTN              23         // A0
+#define BTN              23         // dac1
 #define RGBBTN           22       // A1
 
 
@@ -75,7 +81,8 @@ AudioPlaySdWav           playSwing1;     //Swing
 AudioPlaySdWav           playSwing2;     //Swing L
 AudioMixer4              mixer1;         //xy=371,158
 AudioMixer4              mixer2;         //xy=373,278
-AudioOutputAnalog        dac1;           //xy=632,263
+AudioOutputAnalogStereo  dac1;
+//AudioOutput              dac1;           //xy=632,263
 
 AudioConnection          patchCord1(playStrike1, 0, mixer1, 1);
 AudioConnection          patchCord2(playHum, 0, mixer1, 0);
@@ -230,9 +237,9 @@ void setup() {
 //    SD.begin(15);
 //  }
 
-  SPI.setMOSI(SDCARD_MOSI_PIN);
-  SPI.setSCK(SDCARD_SCK_PIN);
-  SPI.setMISO(SDCARD_MISO_PIN);
+//  SPI.setMOSI(SDCARD_MOSI_PIN);
+//  SPI.setSCK(SDCARD_SCK_PIN);
+//  SPI.setMISO(SDCARD_MISO_PIN);
   
    if (!(SD.begin(15))) {
     // stop here, but print a message repetitively
@@ -243,11 +250,6 @@ void setup() {
 //      delay(500);
 //    }
   }
-   //Enable the EnchantFX board amp and 5v logic for leds
-  pinMode(ENABLE_AMP_PIN,  INPUT_PULLUP);
-  digitalWrite(ENABLE_AMP_PIN, HIGH);
-  pinMode(ENABLE_5V_PIN,  INPUT_PULLUP);
-  digitalWrite(ENABLE_5V_PIN, HIGH);
 
   FastLED.setBrightness(BRIGHTNESS);   // set bright
   leds[0] = CHSV(hue, 255, 255);
