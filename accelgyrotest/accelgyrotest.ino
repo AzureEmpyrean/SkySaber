@@ -1,91 +1,50 @@
-/******************************************************************************
-MinimalistExample.ino
+// Basic demo for accelerometer readings from Adafruit LIS3DH
 
-Marshall Taylor @ SparkFun Electronics
-May 20, 2015
-https://github.com/sparkfun/LSM6DS3_Breakout
-https://github.com/sparkfun/SparkFun_LSM6DS3_Arduino_Library
+#include <Wire.h>
+#include <SPI.h>
+#include <Adafruit_LIS3DH.h>
+#include <Adafruit_Sensor.h>
 
-Description:
-Most basic example of use.
+Adafruit_LIS3DH lis = Adafruit_LIS3DH();
 
-Example using the LSM6DS3 with basic settings.  This sketch collects Gyro and
-Accelerometer data every second, then presents it on the serial monitor.
-
-Resources:
-Uses Wire.h for i2c operation
-Uses SPI.h for SPI operation
-Either can be omitted if not used
-
-Development environment specifics:
-Arduino IDE 1.6.4
-Teensy loader 1.23
-
-Hardware connections:
-Connect I2C SDA line to A4
-Connect I2C SCL line to A5
-Connect GND and 3.3v power to the IMU
-
-This code is released under the [MIT License](http://opensource.org/licenses/MIT).
-
-Please review the LICENSE.md file included with this example. If you have any questions 
-or concerns with licensing, please contact techsupport@sparkfun.com.
-
-Distributed as-is; no warranty is given.
-******************************************************************************/
-
-#include "SparkFunLSM6DS3.h"
-#include "Wire.h"
-
-
-//LSM6DS3 myIMU; //Default constructor is I2C, addr 0x6B
-LSM6DS3 myIMU( I2C_MODE, 0x6A );
-#define ENABLE_AMP_PIN    2
-#define ENABLE_5V_PIN   8
-
-void setup() {
-  // put your setup code here, to run once:
+void setup(void) {
+  digitalWrite(10, HIGH);
   Serial.begin(9600);
-  delay(1000); //relax...
-  Serial.println("Processor came out of reset.\n");
-
-  pinMode(ENABLE_AMP_PIN,   INPUT_PULLUP);
-  pinMode(ENABLE_5V_PIN,  INPUT_PULLUP);
-  digitalWrite(ENABLE_AMP_PIN, HIGH);
-  digitalWrite(ENABLE_5V_PIN, HIGH);
+  delay(3000);
+  Serial.println("waiting to load");
+  delay(1500);
+  Serial.println("LIS3DH test!");
   
-  //Call .begin() to configure the IMU
-  Wire.setSCL(16);
-  Wire.setSDA(17);
-  myIMU.begin();
+  if (! lis.begin(0x18)) {   // change this to 0x19 for alternative i2c address
+    Serial.println("Couldnt start");
+    while (1);
+  }
+  Serial.println("LIS3DH found!");
   
+  lis.setRange(LIS3DH_RANGE_4_G);   // 2, 4, 8 or 16 G!
+  
+  Serial.print("Range = "); Serial.print(2 << lis.getRange());  
+  Serial.println("G");
 }
 
+void loop() {
+  lis.read();      // get X Y and Z data at once
+  // Then print out the raw data
+  Serial.print("X:  "); Serial.print(lis.x); 
+  Serial.print("  \tY:  "); Serial.print(lis.y); 
+  Serial.print("  \tZ:  "); Serial.print(lis.z); 
 
-void loop()
-{
-  //Get all parameters
-  Serial.print("\nAccelerometer:\n");
-  Serial.print(" X = ");
-  Serial.println(myIMU.readFloatAccelX(), 4);
-  Serial.print(" Y = ");
-  Serial.println(myIMU.readFloatAccelY(), 4);
-  Serial.print(" Z = ");
-  Serial.println(myIMU.readFloatAccelZ(), 4);
-
-  Serial.print("\nGyroscope:\n");
-  Serial.print(" X = ");
-  Serial.println(myIMU.readFloatGyroX(), 4);
-  Serial.print(" Y = ");
-  Serial.println(myIMU.readFloatGyroY(), 4);
-  Serial.print(" Z = ");
-  Serial.println(myIMU.readFloatGyroZ(), 4);
-
-  Serial.print("\nThermometer:\n");
-  Serial.print(" Degrees C = ");
-  Serial.println(myIMU.readTempC(), 4);
-  Serial.print(" Degrees F = ");
-  Serial.println(myIMU.readTempF(), 4);
+  /* Or....get a new sensor event, normalized */ 
+  sensors_event_t event; 
+  lis.getEvent(&event);
   
-  delay(1000);
+  /* Display the results (acceleration is measured in m/s^2) */
+  Serial.print("\t\tX: "); Serial.print(event.acceleration.x);
+  Serial.print(" \tY: "); Serial.print(event.acceleration.y); 
+  Serial.print(" \tZ: "); Serial.print(event.acceleration.z); 
+  Serial.println(" m/s^2 ");
+
+  Serial.println();
+ 
+  delay(200); 
 }

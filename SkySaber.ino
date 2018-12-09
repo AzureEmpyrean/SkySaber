@@ -37,7 +37,7 @@
 #define PULSE_ALLOW 1       // blade pulsation (1 - allow, 0 - disallow)
 #define PULSE_AMPL 20       // pulse amplitude
 #define PULSE_DELAY 30      // delay between pulses
-
+#define modeCt 3
 #define DEBUG 1             // debug information in Serial (1 - allow, 0 - disallow)
 // ---------------------------- SETTINGS -------------------------------
 
@@ -71,7 +71,7 @@
 
 
 
-#define modeCt 3
+
 
 AudioPlaySdWav           playBoot; 
 AudioPlaySdWav           playHum;        //saber hum
