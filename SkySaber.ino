@@ -1,17 +1,16 @@
-#include <Audio.h>
 
 
 //   https://github.com/thefirebrandforge/EnchantOS/blob/master/Source/Board.h
 //   https://thefirebrandforge.com/lightsaber/electronics/
 
 // -------------------------- LIBS ---------------------------
-//#include <avr/pgmspace.h>   // PROGMEM library
+#include <avr/pgmspace.h>   // PROGMEM library
 #include "SD.h"
 #include "Wire.h"
 #include "I2Cdev.h"
-#include "MPU6050.h"
+//#include "MPU6050.h"
 #include "FastLED.h"        // addressable LED library
-//#include "Audio.h"
+#include "Audio.h"
 #include "SPI.h"
 #include "SerialFlash.h"
 #include <SparkFunLSM6DS3.h>
@@ -81,8 +80,7 @@ AudioPlaySdWav           playSwing1;     //Swing
 AudioPlaySdWav           playSwing2;     //Swing L
 AudioMixer4              mixer1;         //xy=371,158
 AudioMixer4              mixer2;         //xy=373,278
-AudioOutputAnalogStereo  dac1;
-//AudioOutput              dac1;           //xy=632,263
+AudioOutputAnalog        dac1;           //xy=632,263
 
 AudioConnection          patchCord1(playStrike1, 0, mixer1, 1);
 AudioConnection          patchCord2(playHum, 0, mixer1, 0);
