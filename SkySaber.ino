@@ -12,6 +12,7 @@
 #include "FastLED.h"        // addressable LED library
 #include "Audio.h"
 #include "SPI.h"
+
 #include "SerialFlash.h"
 #include <SparkFunLSM6DS3.h>
 
@@ -24,7 +25,7 @@
 #define NUM_LEDS 146         // number of leds
 #define BTN_TIMEOUT 600     // button hold delay, ms
 #define RGB_BTN_TIMEOUT 400     // button hold delay, ms
-#define BRIGHTNESS 255      // max LED brightness (0 - 255)
+#define BRIGHTNESS 155      // max LED brightness (0 - 255)
 
 #define SWING_TIMEOUT 300   // timeout between swings
 #define SWING_L_THR 150     // swing angle speed threshold
@@ -47,7 +48,7 @@
 #define freePin7           7
 
 #define ENABLE_5V_PIN     8
-#define LED_PIN           9          //
+#define LED_PIN           9          
 #define LED_PIN2          10   
 
 #define SDCARD_MOSI_PIN  11
@@ -65,8 +66,8 @@
 #define freePin20        20
 #define fetPin           21
 
-#define BTN              23         // dac1
-#define RGBBTN           22       // A1
+#define BTN              23        
+#define RGBBTN           22       
 
 
 
@@ -186,18 +187,13 @@ int swing_time_L[8] = {636, 441, 772, 702};
 
 char BUFFER[10];
 
-int fontCount;
-
-String folders[6];
-String font;
-String base = "/AUDIO/";
-
 
 
 // --------------------------------- SOUNDS ---------------------------------
 
 void setup() {
-  delay(2000);  
+  delay(2000);
+    
   FastLED.addLeds<WS2811, LED_PIN, GRB>(leds, 0,1);
   FastLED.addLeds<WS2812B, LED_PIN2, RGB>(leds, 1, NUM_LEDS);
   FastLED.setBrightness(100);  // ~40% of LED strip brightness
@@ -209,7 +205,13 @@ void setup() {
   pinMode(RGBBTN, INPUT_PULLUP);
 
   randomSeed(analogRead(2));    // starting point for random generator
-
+  
+  pinMode(ENABLE_AMP_PIN,  INPUT_PULLUP);
+  digitalWrite(ENABLE_AMP_PIN, HIGH);
+  pinMode(ENABLE_5V_PIN,  INPUT_PULLUP);
+  digitalWrite(ENABLE_5V_PIN, HIGH);
+//  pinMode(13, OUTPUT); 
+  
     // For MPU6050
  /* accelgyro.initialize();
   accelgyro.setFullScaleAccelRange(MPU6050_ACCEL_FS_16);
@@ -235,9 +237,7 @@ void setup() {
 //    SD.begin(15);
 //  }
 
-//  SPI.setMOSI(SDCARD_MOSI_PIN);
-//  SPI.setSCK(SDCARD_SCK_PIN);
-//  SPI.setMISO(SDCARD_MISO_PIN);
+
   
    if (!(SD.begin(15))) {
     // stop here, but print a message repetitively
@@ -343,11 +343,6 @@ switch (mode) {
   }
 
 // --- MAIN LOOP---
-
-//    String folders[6];
-//    String font;
-//    String base = "/AUDIO/";
-
 
 void Rx(){
    

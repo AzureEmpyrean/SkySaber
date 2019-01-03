@@ -28,10 +28,6 @@
 #define STRIKE_S_THR 320    // hard hit acceleration threshold
 #define FLASH_DELAY 80      // flash time while hit
 
-#define PULSE_ALLOW 1       // blade pulsation (1 - allow, 0 - disallow)
-#define PULSE_AMPL 20       // pulse amplitude
-#define PULSE_DELAY 30      // delay between pulses
-
 #define DEBUG 1             // debug information in Serial (1 - allow, 0 - disallow)
 // ---------------------------- SETTINGS -------------------------------
 
@@ -89,8 +85,8 @@ AudioConnection          patchCord8(mixer2, dac1);
 
 CRGB leds[NUM_LEDS];
 CRGB dupe[NUM_LEDS];
-//MPU6050 accelgyro;
 
+//MPU6050 accelgyro;
 LSM6DS3 accelgyro;
 
 const int chipSelect = 8;
@@ -99,7 +95,7 @@ const int chipSelect = 8;
 
 // ------------------------------ VARIABLES ---------------------------------
 int16_t ax, ay, az;
-int16_t gx, gy, gz;
+int16_t gx, gy, gz;|
 unsigned long ACC, GYR, COMPL;
 int gyroX, gyroY, gyroZ, accelX, accelY, accelZ, freq, freq_f = 0;
 float k = 0.2;
@@ -113,7 +109,6 @@ byte nowNumber;
 byte LEDcolor;  // 0 - red, 1 - green, 2 - blue, 3 - pink, 4 - yellow, 5 - ice blue
 byte nowColor, red, green, blue, redOffset, greenOffset, blueOffset;
 boolean swing_flag, swing_allow, strike_flag, mute=false;
-float voltage;
 int PULSEOffset;
 int hue = 0;
 int mode = 0;
@@ -125,87 +120,67 @@ String string2;
 
 // ------------------------------ VARIABLES ---------------------------------
 
-void bootCheck(){
-  
-}
-
 void setup() {
   delay(2000);  
   FastLED.addLeds<WS2811, LED_PIN, GRB>(leds, 0,3);
   FastLED.addLeds<WS2812B, LED_PIN2, RGB>(leds, 1, NUM_LEDS);
   FastLED.setBrightness(100);  // ~40% of LED strip brightness
-  Wire.begin();
-  Serial.begin(9600);
-  Serial.println("Booting up");
-
   pinMode(BTN, INPUT_PULLUP);
   pinMode(RGBBTN, INPUT_PULLUP);
-
   randomSeed(analogRead(2));    // starting point for random generator
 
-    // For MPU6050
- /* accelgyro.initialize();
-  accelgyro.setFullScaleAccelRange(MPU6050_ACCEL_FS_16);
-  accelgyro.setFullScaleGyroRange(MPU6050_GYRO_FS_250);
-  if (DEBUG) {
-    if (accelgyro.testConnection()) Serial.println(F("MPU6050 OK"));
-    else {
-     // leds[2] = CHSV(200, 255, 255);
-          FastLED.show();
-      Serial.println(F("MPU6050 fail"));
-    }
-  }
-  */
-
-  accelgyro.begin();
-  
-    // SD initialization
-
-//  if (DEBUG) {
-//    if (SD.begin(15)) Serial.println(F("SD OK"));
-//    else Serial.println(F("SD fail"));
-//  } else {
-//    SD.begin(15);
-//  }
-
-  SPI.setMOSI(SDCARD_MOSI_PIN);
-  SPI.setSCK(SDCARD_SCK_PIN);
-  SPI.setMISO(SDCARD_MISO_PIN);
-  
-//   if (!(SD.begin(15))) {
-//    // stop here, but print a message repetitively
-//    while (1) {
-//      leds[1] = CHSV(240, 255, 255);
-//          FastLED.show();
-//      Serial.println("Unable to access the SD card");
-//      delay(500);
-//    }
-//  }
-
-  
-   //Enable the EnchantFX board amp and 5v logic for leds
+//Enable the EnchantFX board amp and 5v logic for leds
   pinMode(ENABLE_AMP_PIN,  INPUT_PULLUP);
   digitalWrite(ENABLE_AMP_PIN, HIGH);
   pinMode(ENABLE_5V_PIN,  INPUT_PULLUP);
   digitalWrite(ENABLE_5V_PIN, HIGH);
 
-  FastLED.setBrightness(BRIGHTNESS);   // set bright
-  //leds[0] = CHSV(hue, 255, 255);
-  FastLED.show();
-  
+// Set audio and memory
   dac1.analogReference(EXTERNAL);
   AudioMemory(18);
   
-//  pinMode(fetPin, OUTPUT);  
-//  digitalWrite(fetPin, HIGH); //Turn on the power to the bluetooth module.
+  Wire.begin();
   
-  //Bluetooth begin
+//Open normal serial  
+  Serial.begin(9600);
+//Open Bluetooth Serial 
   Serial1.begin(38400);
-  //Bluetooth
+//Start Gyro
+  accelgyro.begin();
 
 
- //SD.open("/AUDIO");
-  //  findFonts();
+  
+  Serial.println("Booting up");
+
+
+  SPI.setMOSI(SDCARD_MOSI_PIN);
+  SPI.setSCK(SDCARD_SCK_PIN);
+  SPI.setMISO(SDCARD_MISO_PIN);
+
+//Begin SD card and test for card
+   if (!(SD.begin(15))) {
+    // stop here, but print a message repetitively
+    while (1) {
+      leds[1] = CHSV(240, 255, 255);
+          FastLED.show();
+      Serial.println("Unable to access the SD card");
+      delay(500);
+    }
+  }
+
+//Begin other component tests
+
+//Set all leds to purple for test
+  FastLED.setBrightness(BRIGHTNESS);   // set bright
+  fill_solid(leds, NUM_LEDS,  CRGB::Purple );
+  FastLED.show();
+
+//check button functionality
+    do{       
+        btnTick();
+        rgbBtnTick();        
+      }while(btn==0 && rgb == 0);
+btn=0; rgb =0;
 
 }
 
@@ -213,7 +188,7 @@ void setup() {
 void loop() {
   
   FastLED.setBrightness(100);
-  //randomPULSE();
+  
 
   btnTick();
   rgbBtnTick();
@@ -275,13 +250,7 @@ void rgbBtnTick() {
    
       if (rgb_btn_counter == 1) {
       Serial.println("this should light up");
-            hue = 100;
-            fill_solid(leds, NUM_LEDS,  CHSV(hue, 255, 255) );
-           FastLED.show();
-           delay(1000);
-           hue = 155;
-           fill_solid(leds, NUM_LEDS,  CHSV(hue, 255, 255) );
-           FastLED.show();            
+               hit_flash();
           }
       if (rgb_btn_counter == 3) {               // 3 press count
        
@@ -316,21 +285,7 @@ void btnTick() {
   if ( ((millis() - btn_timer > BTN_TIMEOUT) && (btn_counter != 0)) || (string == "btnx1") || (string == "btnx3") || (string == "btnx5") ) {
 
     if (btn_counter == 1) {
-          ls_chg_state = 1;                     // flag to change saber state (on/off)
-          Serial.println(ls_chg_state);
-    }
-    if ((btn_counter == 3) || (string == "btnx3")){               // 3 press count
-        mode++;                         // change mode
-        if (mode > modeCt) mode = 0;
-      }
-      
-      if ((btn_counter == 5)  || (string == "btnx5")) {               // 5 press count         
-      mute = !mute;
-        if (!mute) {
-       playHum.play("HUM.wav");
-        } else {
-     //   muteAll(6);
-        }
+      hit_flash();
     }
     btn_counter = 0;
   }
@@ -543,5 +498,47 @@ void fadeall() {
   for (uint16_t i = 0; i < NUM_LEDS; i++) {
     leds[i].nscale8(250);
   }
+}
+
+void getFreq() {
+ // if (ls_state) {                                               // if SkySaber is on
+    if (millis() - mpuTimer > 500) {                            
+     // accelgyro.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
+     ax =accelgyro.readFloatAccelX();       
+     ay =accelgyro.readFloatAccelY();
+     az =accelgyro.readFloatAccelZ();
+     gx =accelgyro.readFloatGyroX();
+     gy =accelgyro.readFloatGyroY();
+     gz =accelgyro.readFloatGyroZ();
+      // find absolute and divide on 100
+      gyroX = abs(gx );
+      gyroY = abs(gy );
+      gyroZ = abs(gz );
+      accelX = abs(ax );
+      accelY = abs(ay );
+      accelZ = abs(az );
+
+      // vector sum
+      ACC = sq((long)accelX) + sq((long)accelY) + sq((long)accelZ);
+      ACC = sqrt(ACC);
+      GYR = sq((long)gyroX) + sq((long)gyroY) + sq((long)gyroZ);
+      GYR = sqrt((long)GYR);
+      COMPL = ACC + GYR;
+      
+
+         Serial.print("$");
+         Serial.print(gyroX);
+         Serial.print(" ");
+         Serial.print(gyroY);
+         Serial.print(" ");
+         Serial.print(gyroZ);
+         Serial.println(";");
+      
+      freq = (long)COMPL * COMPL / 1500;                        // parabolic tone change
+      freq = constrain(freq, 18, 300);                          
+      freq_f = freq * k + freq_f * (1 - k);                     // smooth filter
+        mpuTimer = micros();                                     
+    }
+ // }
 }
 
