@@ -21,7 +21,7 @@
 
 
 // ---------------------------- SETTINGS -------------------------------
-#define NUM_LEDS 146         // number of leds
+#define NUM_LEDS 70         // number of leds
 #define BTN_TIMEOUT 600     // button hold delay, ms
 #define RGB_BTN_TIMEOUT 400     // button hold delay, ms
 #define BRIGHTNESS 255      // max LED brightness (0 - 255)
@@ -47,8 +47,8 @@
 #define freePin7           7
 
 #define ENABLE_5V_PIN     8
-#define LED_PIN           9          //
-#define LED_PIN2          10   
+#define LED_PIN           19          //button
+#define LED_PIN2          18         //blade
 
 #define SDCARD_MOSI_PIN  11
 #define SDCARD_MISO_PIN  12
@@ -58,15 +58,14 @@
 #define SDCARD_SCK_PIN   14
 #define SDCARD_CS_PIN    15
 
-#define freePin16        16
-#define freePin17        17
-#define freePin18        18
-#define freePin19        19
+#define IMUSCL           16
+#define IMUSDA           17
+
 #define freePin20        20
 #define fetPin           21
 
-#define BTN              23         // dac1
-#define RGBBTN           22       // A1
+#define BTN              29         // dac1
+#define RGBBTN           28       // A1
 
 
 
@@ -96,7 +95,7 @@ CRGB leds[NUM_LEDS];
 CRGB dupe[NUM_LEDS];
 //MPU6050 accelgyro;
 
-LSM6DS3 accelgyro;
+LSM6DS3 accelgyro(I2C_MODE, 0x6A);
 
 const int chipSelect = 8;
 
@@ -186,22 +185,19 @@ int swing_time_L[8] = {636, 441, 772, 702};
 
 char BUFFER[10];
 
-int fontCount;
-
-String folders[6];
-String font;
-String base = "/AUDIO/";
-
-
-
 // --------------------------------- SOUNDS ---------------------------------
 
 void setup() {
   delay(2000);  
-  FastLED.addLeds<WS2811, LED_PIN, GRB>(leds, 0,1);
-  FastLED.addLeds<WS2812B, LED_PIN2, RGB>(leds, 1, NUM_LEDS);
-  FastLED.setBrightness(100);  // ~40% of LED strip brightness
+ // FastLED.addLeds<WS2811, 19, RGB>(leds, 0,2).setCorrection(TypicalLEDStrip);
+    FastLED.addLeds<WS2812B, 18, GRB>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
+  //FastLED.addLeds<WS2812B, 18, GRB>(leds, 2, NUM_LEDS).setCorrection(TypicalLEDStrip);
+  FastLED.setBrightness(96);  // ~40% of LED strip brightness
+  
   Wire.begin();
+  Wire.setSCL(IMUSCL);
+  Wire.setSDA(IMUSDA);
+  
   Serial.begin(9600);
   Serial.println("Booting up");
 
@@ -209,6 +205,11 @@ void setup() {
   pinMode(RGBBTN, INPUT_PULLUP);
 
   randomSeed(analogRead(2));    // starting point for random generator
+  
+  pinMode(ENABLE_AMP_PIN,  INPUT_PULLUP);
+  digitalWrite(ENABLE_AMP_PIN, HIGH);
+ // pinMode(ENABLE_5V_PIN,  INPUT_PULLUP);
+  //digitalWrite(ENABLE_5V_PIN, HIGH);
 
     // For MPU6050
  /* accelgyro.initialize();
@@ -239,25 +240,22 @@ void setup() {
 //  SPI.setSCK(SDCARD_SCK_PIN);
 //  SPI.setMISO(SDCARD_MISO_PIN);
   
-   if (!(SD.begin(15))) {
-    // stop here, but print a message repetitively
+//   if (!(SD.begin(15))) {
+//    // stop here, but print a message repetitively
 //    while (1) {
 //      leds[1] = CHSV(240, 255, 255);
 //          FastLED.show();
 //      Serial.println("Unable to access the SD card");
 //      delay(500);
 //    }
-  }
+//  }
 
-  FastLED.setBrightness(BRIGHTNESS);   // set bright
-  leds[0] = CHSV(hue, 255, 255);
-  FastLED.show();
+ // FastLED.setBrightness(BRIGHTNESS);   // set bright
+ // leds[0] = CHSV(hue, 255, 255);
+ // FastLED.show();
   
-  dac1.analogReference(EXTERNAL);
+//  dac1.analogReference(EXTERNAL);
   AudioMemory(18);
-  
- // pinMode(fetPin, OUTPUT);  
- // digitalWrite(fetPin, HIGH); //Turn on the power to the bluetooth module.
   
   //Bluetooth begin
   Serial1.begin(38400);
@@ -307,7 +305,7 @@ btn=0; rgb =0;
 
 // --- MAIN LOOP---
 void loop() {
-  
+
   FastLED.setBrightness(100);
   //randomPULSE();
   getFreq();
@@ -589,14 +587,14 @@ void getFreq() {
       GYR = sqrt((long)GYR);
       COMPL = ACC + GYR;
       
-
-         Serial.print("$");
-         Serial.print(gyroX);
-         Serial.print(" ");
-         Serial.print(gyroY);
-         Serial.print(" ");
-         Serial.print(gyroZ);
-         Serial.println(";");
+//
+//         Serial.print("$");
+//         Serial.print(gyroX);
+//         Serial.print(" ");
+//         Serial.print(gyroY);
+//         Serial.print(" ");
+//         Serial.print(gyroZ);
+//         Serial.println(";");
       
       freq = (long)COMPL * COMPL / 1500;                        // parabolic tone change
       freq = constrain(freq, 18, 300);                          

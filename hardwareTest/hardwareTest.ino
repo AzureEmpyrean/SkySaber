@@ -42,8 +42,8 @@
 #define freePin7           7
 
 #define ENABLE_5V_PIN     8
-#define LED_PIN           9          //
-#define LED_PIN2          10   
+#define LED_PIN           19          //button
+#define LED_PIN2          18         //blade
 
 #define SDCARD_MOSI_PIN  11
 #define SDCARD_MISO_PIN  12
@@ -53,16 +53,16 @@
 #define SDCARD_SCK_PIN   14
 #define SDCARD_CS_PIN    15
 
-#define freePin16        16
-#define freePin17        17
+#define IMUSCL           16
+#define IMUSDA           17
+
 #define freePin18        18
 #define freePin19        19
 #define freePin20        20
 #define fetPin           21
 
-#define BTN              23         // A0
-#define RGBBTN           22       // A1
-
+#define BTN              29         // dac1
+#define RGBBTN           28       // A1
 
 
 #define modeCt 3
@@ -131,8 +131,8 @@ void bootCheck(){
 
 void setup() {
   delay(2000);  
-  FastLED.addLeds<WS2811, LED_PIN, GRB>(leds, 0,3);
-  FastLED.addLeds<WS2812B, LED_PIN2, RGB>(leds, 1, NUM_LEDS);
+  FastLED.addLeds<WS2811, LED_PIN, RGB>(leds, 0,2);
+  FastLED.addLeds<WS2812B, LED_PIN2, GRB>(leds, 1, NUM_LEDS);
   FastLED.setBrightness(100);  // ~40% of LED strip brightness
   Wire.begin();
   Serial.begin(9600);
@@ -140,7 +140,8 @@ void setup() {
 
   pinMode(BTN, INPUT_PULLUP);
   pinMode(RGBBTN, INPUT_PULLUP);
-
+    fill_solid(leds, NUM_LEDS,  CHSV(055, 255, 255) );
+           FastLED.show();
   randomSeed(analogRead(2));    // starting point for random generator
 
     // For MPU6050
@@ -168,9 +169,7 @@ void setup() {
 //    SD.begin(15);
 //  }
 
-  SPI.setMOSI(SDCARD_MOSI_PIN);
-  SPI.setSCK(SDCARD_SCK_PIN);
-  SPI.setMISO(SDCARD_MISO_PIN);
+
   
 //   if (!(SD.begin(15))) {
 //    // stop here, but print a message repetitively
@@ -200,7 +199,8 @@ void setup() {
 //  digitalWrite(fetPin, HIGH); //Turn on the power to the bluetooth module.
   
   //Bluetooth begin
-  Serial1.begin(38400);
+  Serial1.begin(9600);
+  //Serial1.begin(19200);
   //Bluetooth
 
 
@@ -214,9 +214,9 @@ void loop() {
   
   FastLED.setBrightness(100);
   //randomPULSE();
-
+  Rx();
   btnTick();
-  rgbBtnTick();
+ rgbBtnTick();
 
 //switch (mode) {
 //    case 0:
@@ -243,11 +243,22 @@ void loop() {
   }
 
 // --- MAIN LOOP---
+void Rx(){
+     
+  if (Serial1.available()){
+       string = Serial1.readStringUntil('\n');
+             string.trim();
+                 Serial.println(string); 
+            }
+// Serial.println(string); 
+   Serial1.flush();
 
+  }
+  
 void rgbBtnTick() {
   rgbBtnState = !digitalRead(RGBBTN);
   if ( (rgbBtnState && !rgb_btn_flag && (millis() - rgb_btn_timer > RGB_BTN_TIMEOUT)  ) || (string == "rgbx1") ){
-     if (DEBUG) Serial.println(F("This is pin 22******"));
+     if (DEBUG) Serial.println(F("This is pin 29******"));
     rgb_btn_flag = 1;
     rgb_btn_counter++;
     rgb_btn_timer = millis();
@@ -274,7 +285,7 @@ void rgbBtnTick() {
    if (DEBUG) Serial.println((rgb_btn_counter ));
    
       if (rgb_btn_counter == 1) {
-      Serial.println("this should light up");
+     // Serial1.println("this should light up");
             hue = 100;
             fill_solid(leds, NUM_LEDS,  CHSV(hue, 255, 255) );
            FastLED.show();
@@ -298,7 +309,7 @@ void rgbBtnTick() {
 void btnTick() {  
   btnState = !digitalRead(BTN);
   if ( (btnState && !btn_flag && (millis() - btn_timer > BTN_TIMEOUT)  ) || (string == "btnx1") ) {
-    if (DEBUG) Serial.println(F("This is pin 23@@@@"));
+    if (DEBUG) Serial.println(F("This is pin 28@@@@"));
     btn_flag = 1;
     btn_counter++;
     btn_timer = millis();
