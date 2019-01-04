@@ -306,6 +306,8 @@ btn=0; rgb =0;
 void loop() {
 
   FastLED.setBrightness(100);
+
+/*
   //randomPULSE();
   getFreq();
   Rx();
@@ -335,12 +337,13 @@ switch (mode) {
       cylon();
       break;
   }
+*/
 
  string="";
   }
 
 // --- MAIN LOOP---
-
+/* 
 void Rx(){
 
   if (Serial1.available()){
@@ -349,7 +352,9 @@ void Rx(){
             }
    Serial1.flush();
   }
-
+*/
+  
+/*
 void rgbBtnTick() {
   rgbBtnState = !digitalRead(RGBBTN);
   if ( (rgbBtnState && !rgb_btn_flag) || (string == "rgbx1") ){
@@ -388,8 +393,9 @@ void rgbBtnTick() {
       }
 
   }
-
-
+ */
+ 
+/* 
 void btnTick() {
   btnState = !digitalRead(BTN);
   if ( (btnState && !btn_flag) || (string == "btnx1") ) {
@@ -436,8 +442,8 @@ void btnTick() {
     btn_counter = 0;
   }
 }
-
-
+ */
+/* 
 void on_off_sound() {
   if (ls_chg_state) {                // if change flag
     if (!ls_state) {                 // if SkySaber is turned off
@@ -484,7 +490,9 @@ void on_off_sound() {
     bzzTimer = millis();
   }
 }
+/* */
 
+/* 
 void randomPULSE() {
   if (PULSE_ALLOW && ls_state && (millis() - PULSE_timer > PULSE_DELAY)) {
     PULSE_timer = millis();
@@ -496,7 +504,9 @@ void randomPULSE() {
     setAll(redOffset, greenOffset, blueOffset);
   }
 }
+*/
 
+/* 
 void strikeTick() {
   if ((ACC > STRIKE_THR) && (ACC < STRIKE_S_THR)) {
   //  if (!mute) noToneAC();
@@ -527,7 +537,9 @@ void strikeTick() {
     strike_flag = 1;
   }
 }
+ */
 
+/* 
 void swingTick() {
   if (GYR > 80 && (millis() - swing_timeout > 100) && !mute) {
     swing_timeout = millis();
@@ -555,7 +567,9 @@ void swingTick() {
     }
   }
 }
+*/
 
+/* 
 void getFreq() {
  // if (ls_state) {                                               // if SkySaber is on
     if (millis() - mpuTimer > 500) {
@@ -597,20 +611,24 @@ void getFreq() {
     }
  // }
 }
-
+*/
+/* 
 void setPixel(int Pixel, byte red, byte green, byte blue) {
   leds[Pixel].r = red;
   leds[Pixel].g = green;
   leds[Pixel].b = blue;
 }
-
+*/
+/* 
 void setAll(byte red, byte green, byte blue) {
   for (int i = 0; i < NUM_LEDS; i++ ) {
     setPixel(i, red, green, blue);
   }
   FastLED.show();
 }
+*/
 
+/* 
 void light_up() {
 
   if (mode==3){
@@ -630,7 +648,9 @@ void light_up() {
         }
   }
 }
+*/
 
+/* 
 void light_down() {
   for (int i = NUM_LEDS ; i >= 1 ; i--) {
 	  	 // hue=dupe[i];
@@ -639,7 +659,9 @@ void light_down() {
           delay(20);
         }
 }
+*/
 
+/* 
 void hit_flash() {
   for (int i = 0; i < NUM_LEDS; i++) {
           leds[i]= -leds[i];
@@ -651,8 +673,9 @@ void hit_flash() {
         }
    FastLED.show();
 }
+*/
 
-
+/* 
 void cycle() {
 
   if ((string.equals("rgbHold") || rgb_hold_flag))
@@ -676,7 +699,9 @@ void cycle() {
   }
 
 }
+*/
 
+/* 
 void randCycle(){
 
     hue++;
@@ -690,15 +715,17 @@ void randCycle(){
     }
     FastLED.show();
   }
+*/
 
+/* 
 void rainbow()
 {
   // FastLED's built-in rainbow generator
   fill_rainbow( leds, NUM_LEDS, gHue, 7);
 }
+*/
 
-
-
+/* 
 void sinelon()
 {
   static uint16_t num = 0;
@@ -717,7 +744,9 @@ void sinelon()
    }
   FastLED.show();
 }
+*/
 
+/* 
 void cylon(){
   static uint16_t num = 0;
   static bool runonce = false; // Used to turn on the saber only 'once' while you hold the button.
@@ -756,12 +785,15 @@ void cylon(){
    }
   FastLED.show();
 }
+*/
 
+/* 
 void rainbowCycle() {
   byte *c;
   uint16_t i, j;
   static uint16_t num = 0;
-  static bool runonce = false; // Used to turn on the saber only 'once' while you hold the button.
+  stati
+  c bool runonce = false; // Used to turn on the saber only 'once' while you hold the button.
   static uint32_t mytime = millis();
   static uint16_t mydelay = 20; // Change this to speed up/slow down your led effect.
     for (int i = 0; i < NUM_LEDS; i++) {
@@ -799,14 +831,17 @@ byte * Wheel(byte WheelPos) {
   }
   return c;
 }
+*/
 
+/* 
 void fadeall() {
   for (uint16_t i = 0; i < NUM_LEDS; i++) {
     leds[i].nscale8(250);
   }
 }
+*/
 
-
+/* 
 void muteAll(int x){
   if(x == 1) playHum.stop();        //saber hum
   if(x == 2) playStrike1.stop();    //Strike
@@ -823,3 +858,5 @@ void muteAll(int x){
     playSwing2.stop();     //Swing L
   }
 }
+
+/* */
