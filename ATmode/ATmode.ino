@@ -19,7 +19,7 @@ void setup()
   //digitalWrite(4, LOW);
   Serial.begin(9600);
   Serial.println("Enter AT commands:");
-  Serial1.begin(9600);  // HC-05 default speed in AT command more
+  Serial1.begin(38400);  // HC-05 default speed in AT command more
 }
 
 void loop()

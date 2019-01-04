@@ -21,6 +21,7 @@ int mode = 0;
 uint8_t gHue = 0;
 const byte BTpin = 7;
 boolean BTconnected = false;
+String string;
 // ------------------------------ VARIABLES ---------------------------------
 
 // ---------------------------- SETTINGS -------------------------------
@@ -40,7 +41,7 @@ Adafruit_DRV2605 drv;
 void setup() {
   // put your setup code here, to run once:
     Serial.begin(9600);
-    HWSERIAL.begin(38400);
+    HWSERIAL.begin(9600);
     pinMode(BTN, INPUT_PULLUP);
     pinMode(RGBBTN, INPUT_PULLUP);
     pinMode(ALLOWBTN, INPUT_PULLUP);
@@ -62,21 +63,26 @@ void loop() {
 		 	 drv.setWaveform(1, 0);       
 		 	 drv.go();
        Serial.println("waiting for connection");
-	      if ( digitalRead(BTpin)==HIGH)  { BTconnected = true;};
+	      if ( digitalRead(BTpin)==HIGH)  { Serial.println("Connected"); BTconnected = true;};
 	    }
 	 
 	allowBtnTick();
-    //rgbBtnTick();
-   // btnTick();
+    rgbBtnTick();
+    btnTick();
 }
 
 void tx(String trans){  
    Serial.println(trans);
-   HWSERIAL.println(trans);
+   Serial1.println(trans);
 }
 
 void rx(){
-  
+    if (Serial1.available()){
+       string = Serial1.readStringUntil('\n');
+             string.trim();              
+            }
+   Serial1.flush();
+   Serial.println(string);
 }
 
 void haptic(int press){
@@ -233,7 +239,7 @@ void allowBtnTick() {
   
   if ((millis() - allow_btn_timer > BTN_TIMEOUT) && (allow_btn_counter != 0)) {
     if (allow_btn_counter == 1) {               // single press count
-            tx("allowed");
+            tx("1");
           }
     if (allow_btn_counter == 3) {               // 3 press count
         tx("allowBtnx3");

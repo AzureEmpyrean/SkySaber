@@ -22,7 +22,7 @@
 
 
 // ---------------------------- SETTINGS -------------------------------
-#define NUM_LEDS 146         // number of leds
+#define NUM_LEDS 70         // number of leds
 #define BTN_TIMEOUT 600     // button hold delay, ms
 #define RGB_BTN_TIMEOUT 400     // button hold delay, ms
 #define BRIGHTNESS 155      // max LED brightness (0 - 255)
@@ -48,8 +48,8 @@
 #define freePin7           7
 
 #define ENABLE_5V_PIN     8
-#define LED_PIN           9          
-#define LED_PIN2          10   
+#define LED_PIN           19          //button
+#define LED_PIN2          18         //blade
 
 #define SDCARD_MOSI_PIN  11
 #define SDCARD_MISO_PIN  12
@@ -59,21 +59,20 @@
 #define SDCARD_SCK_PIN   14
 #define SDCARD_CS_PIN    15
 
-#define freePin16        16
-#define freePin17        17
-#define freePin18        18
-#define freePin19        19
+#define IMUSCL           16
+#define IMUSDA           17
+
 #define freePin20        20
 #define fetPin           21
 
-#define BTN              23        
-#define RGBBTN           22       
+#define BTN              29         // dac1
+#define RGBBTN           28       // A1
 
 
 
 
 
-AudioPlaySdWav           playBoot; 
+AudioPlaySdWav           playBoot;
 AudioPlaySdWav           playHum;        //saber hum
 AudioPlaySdWav           playStrike1;    //Strike
 AudioPlaySdWav           playStrike2;    //Strike S
@@ -97,7 +96,7 @@ CRGB leds[NUM_LEDS];
 CRGB dupe[NUM_LEDS];
 //MPU6050 accelgyro;
 
-LSM6DS3 accelgyro;
+LSM6DS3 accelgyro(I2C_MODE, 0x6A);
 
 const int chipSelect = 8;
 
@@ -134,7 +133,7 @@ int btn=0, rgb=0, bootCheck=0;
 
 
 // --------------------------------- SOUNDS ----------------------------------
-const char strike1[] PROGMEM = "SK1.wav"; 
+const char strike1[] PROGMEM = "SK1.wav";
 const char strike2[] PROGMEM = "SK2.wav";
 const char strike3[] PROGMEM = "SK3.wav";
 const char strike4[] PROGMEM = "SK4.wav";
@@ -187,17 +186,19 @@ int swing_time_L[8] = {636, 441, 772, 702};
 
 char BUFFER[10];
 
-
-
 // --------------------------------- SOUNDS ---------------------------------
 
 void setup() {
   delay(2000);
-    
-  FastLED.addLeds<WS2811, LED_PIN, GRB>(leds, 0,1);
-  FastLED.addLeds<WS2812B, LED_PIN2, RGB>(leds, 1, NUM_LEDS);
-  FastLED.setBrightness(100);  // ~40% of LED strip brightness
+ // FastLED.addLeds<WS2811, 19, RGB>(leds, 0,2).setCorrection(TypicalLEDStrip);
+    FastLED.addLeds<WS2812B, 18, GRB>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
+  //FastLED.addLeds<WS2812B, 18, GRB>(leds, 2, NUM_LEDS).setCorrection(TypicalLEDStrip);
+  FastLED.setBrightness(96);  // ~40% of LED strip brightness
+
   Wire.begin();
+  Wire.setSCL(IMUSCL);
+  Wire.setSDA(IMUSDA);
+
   Serial.begin(9600);
   Serial.println("Booting up");
 
@@ -205,13 +206,12 @@ void setup() {
   pinMode(RGBBTN, INPUT_PULLUP);
 
   randomSeed(analogRead(2));    // starting point for random generator
-  
+
   pinMode(ENABLE_AMP_PIN,  INPUT_PULLUP);
   digitalWrite(ENABLE_AMP_PIN, HIGH);
-  pinMode(ENABLE_5V_PIN,  INPUT_PULLUP);
-  digitalWrite(ENABLE_5V_PIN, HIGH);
-//  pinMode(13, OUTPUT); 
-  
+ // pinMode(ENABLE_5V_PIN,  INPUT_PULLUP);
+  //digitalWrite(ENABLE_5V_PIN, HIGH);
+
     // For MPU6050
  /* accelgyro.initialize();
   accelgyro.setFullScaleAccelRange(MPU6050_ACCEL_FS_16);
@@ -227,7 +227,7 @@ void setup() {
   */
 
   accelgyro.begin();
-  
+
     // SD initialization
 
 //  if (DEBUG) {
@@ -238,27 +238,24 @@ void setup() {
 //  }
 
 
-  
-   if (!(SD.begin(15))) {
-    // stop here, but print a message repetitively
+
+//   if (!(SD.begin(15))) {
+//    // stop here, but print a message repetitively
 //    while (1) {
 //      leds[1] = CHSV(240, 255, 255);
 //          FastLED.show();
 //      Serial.println("Unable to access the SD card");
 //      delay(500);
 //    }
-  }
+//  }
 
-  FastLED.setBrightness(BRIGHTNESS);   // set bright
-  leds[0] = CHSV(hue, 255, 255);
-  FastLED.show();
-  
-  dac1.analogReference(EXTERNAL);
+ // FastLED.setBrightness(BRIGHTNESS);   // set bright
+ // leds[0] = CHSV(hue, 255, 255);
+ // FastLED.show();
+
+//  dac1.analogReference(EXTERNAL);
   AudioMemory(18);
-  
- // pinMode(fetPin, OUTPUT);  
- // digitalWrite(fetPin, HIGH); //Turn on the power to the bluetooth module.
-  
+
   //Bluetooth begin
   Serial1.begin(38400);
   //Bluetooth
@@ -272,29 +269,29 @@ void setup() {
           delay(25);
         }
 //check bluetooth
-    do{  
-        Rx();   
+    do{
+        Rx();
         btnTick();
-        rgbBtnTick();        
+        rgbBtnTick();
       }while(btn==0 && rgb == 0);
 btn=0; rgb =0;
 
-        
-        
+
+
 //check button functionality
-    do{       
+    do{
         btnTick();
-        rgbBtnTick();        
+        rgbBtnTick();
       }while(btn==0 && rgb == 0);
 btn=0; rgb =0;
 
-////check gyro      
-    do{       
+////check gyro
+    do{
         getFreq();
         btnTick();
         rgbBtnTick();
         strikeTick();
-        swingTick();        
+        swingTick();
       }while(btn==0 && rgb == 0);
 btn=0; rgb =0;
 
@@ -307,7 +304,7 @@ btn=0; rgb =0;
 
 // --- MAIN LOOP---
 void loop() {
-  
+
   FastLED.setBrightness(100);
   //randomPULSE();
   getFreq();
@@ -345,10 +342,10 @@ switch (mode) {
 // --- MAIN LOOP---
 
 void Rx(){
-   
+
   if (Serial1.available()){
        string = Serial1.readStringUntil('\n');
-             string.trim();              
+             string.trim();
             }
    Serial1.flush();
   }
@@ -365,7 +362,7 @@ void rgbBtnTick() {
       hit_flash();
     }
   }
-   
+
   if ((!rgbBtnState && rgb_btn_flag)){
     rgb_btn_flag = 0;
     rgb_hold_flag = 0;
@@ -380,20 +377,20 @@ void rgbBtnTick() {
   }
 
   if ( ((millis() - rgb_btn_timer > BTN_TIMEOUT) && (rgb_btn_counter != 0)) || (string == "rgbx3") || (string == "rgbx5") ) {
-    
+
       if (rgb_btn_counter == 3) {               // 3 press count
-       
+
       }
       if ( rgb_btn_counter == 5){
-        
+
           }
         rgb_btn_counter = 0;
-      }    
+      }
 
   }
 
 
-void btnTick() {  
+void btnTick() {
   btnState = !digitalRead(BTN);
   if ( (btnState && !btn_flag) || (string == "btnx1") ) {
     if (DEBUG) Serial.println(F("BTN PRESS"));
@@ -409,7 +406,7 @@ void btnTick() {
   if ( (btn_flag && btnState && (millis() - btn_timer > BTN_TIMEOUT) && !hold_flag) || (string == "btnHold")){
     hold_flag = 1;
     btn_counter = 0;
-    
+
     if(bootCheck==1){
       btn=1;
     }
@@ -427,8 +424,8 @@ void btnTick() {
         mode++;                         // change mode
         if (mode > modeCt) mode = 0;
       }
-      
-      if ((btn_counter == 5)  || (string == "btnx5")) {               // 5 press count         
+
+      if ((btn_counter == 5)  || (string == "btnx5")) {               // 5 press count
       mute = !mute;
         if (!mute) {
        playHum.play("HUM.wav");
@@ -451,11 +448,11 @@ void on_off_sound() {
         delay(200);
         bzzz_flag = 1;
         ls_state = true;               // remember that turned on
-        
+
         if (!mute) {
           playHum.play("HUM.wav");
         } else {
-          muteAll(6);  
+          muteAll(6);
         }
         playBoot.stop();
     } else {                         // if SkySaber is turned on
@@ -467,7 +464,7 @@ void on_off_sound() {
       delay(300);
       muteAll(6);
     if (DEBUG) Serial.println(F("SABER OFF"));
-      ls_state = false;      
+      ls_state = false;
     }
     ls_chg_state = 0;
   }
@@ -514,8 +511,8 @@ void strikeTick() {
       humTimer = millis() - 9000 + strike_s_time[nowNumber] - FLASH_DELAY;
     strike_flag = 1;
   }
-  
-  
+
+
   if (ACC >= STRIKE_S_THR) {
  //   if (!mute) noToneAC();
     nowNumber = random(8);
@@ -535,21 +532,21 @@ void swingTick() {
   if (GYR > 80 && (millis() - swing_timeout > 100) && !mute) {
     swing_timeout = millis();
     if (((millis() - swing_timer) > SWING_TIMEOUT) && swing_flag && !strike_flag) {
-      if (GYR >= SWING_THR) {      
-        nowNumber = random(5);          
+      if (GYR >= SWING_THR) {
+        nowNumber = random(5);
 
         strcpy_P(BUFFER, (char*)pgm_read_word(&(swings[nowNumber])));
-        playSwing1.play(BUFFER);               
+        playSwing1.play(BUFFER);
         humTimer = millis() - 9000 + swing_time[nowNumber];
         swing_flag = 0;
         swing_timer = millis();
         swing_allow = 0;
       }
       if ((GYR > SWING_L_THR) && (GYR < SWING_THR)) {
-        nowNumber = random(5);            
+        nowNumber = random(5);
 
         strcpy_P(BUFFER, (char*)pgm_read_word(&(swings_L[nowNumber])));
-      playSwing2.play(BUFFER);              
+      playSwing2.play(BUFFER);
         humTimer = millis() - 9000 + swing_time_L[nowNumber];
         swing_flag = 0;
         swing_timer = millis();
@@ -561,9 +558,9 @@ void swingTick() {
 
 void getFreq() {
  // if (ls_state) {                                               // if SkySaber is on
-    if (millis() - mpuTimer > 500) {                            
+    if (millis() - mpuTimer > 500) {
      // accelgyro.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
-     ax =accelgyro.readFloatAccelX();       
+     ax =accelgyro.readFloatAccelX();
      ay =accelgyro.readFloatAccelY();
      az =accelgyro.readFloatAccelZ();
      gx =accelgyro.readFloatGyroX();
@@ -583,20 +580,20 @@ void getFreq() {
       GYR = sq((long)gyroX) + sq((long)gyroY) + sq((long)gyroZ);
       GYR = sqrt((long)GYR);
       COMPL = ACC + GYR;
-      
 
-         Serial.print("$");
-         Serial.print(gyroX);
-         Serial.print(" ");
-         Serial.print(gyroY);
-         Serial.print(" ");
-         Serial.print(gyroZ);
-         Serial.println(";");
-      
+//
+//         Serial.print("$");
+//         Serial.print(gyroX);
+//         Serial.print(" ");
+//         Serial.print(gyroY);
+//         Serial.print(" ");
+//         Serial.print(gyroZ);
+//         Serial.println(";");
+
       freq = (long)COMPL * COMPL / 1500;                        // parabolic tone change
-      freq = constrain(freq, 18, 300);                          
+      freq = constrain(freq, 18, 300);
       freq_f = freq * k + freq_f * (1 - k);                     // smooth filter
-        mpuTimer = micros();                                     
+        mpuTimer = micros();
     }
  // }
 }
@@ -645,19 +642,19 @@ void light_down() {
 
 void hit_flash() {
   for (int i = 0; i < NUM_LEDS; i++) {
-          leds[i]= -leds[i]; 
+          leds[i]= -leds[i];
         }
-   FastLED.show();            
-  delay(FLASH_DELAY);                
+   FastLED.show();
+  delay(FLASH_DELAY);
   for (int i = 0; i < NUM_LEDS; i++) {
-          leds[i] = dupe[i]; 
+          leds[i] = dupe[i];
         }
-   FastLED.show();        
+   FastLED.show();
 }
 
 
 void cycle() {
- 
+
   if ((string.equals("rgbHold") || rgb_hold_flag))
   {
     Serial.println(hue);
@@ -672,7 +669,7 @@ void cycle() {
       FastLED.show();
     }
        for (int i = 0; i < NUM_LEDS; i++) {
-          dupe[i] = leds[i]; 
+          dupe[i] = leds[i];
         }
      FastLED.show();
     delay(60);
@@ -681,7 +678,7 @@ void cycle() {
 }
 
 void randCycle(){
-  
+
     hue++;
     delay(10);
 
@@ -689,12 +686,12 @@ void randCycle(){
 
     if (ls_state) {
       fill_solid(leds, NUM_LEDS,  CHSV(hue, 255, 255) );
-      
+
     }
     FastLED.show();
   }
 
-void rainbow() 
+void rainbow()
 {
   // FastLED's built-in rainbow generator
   fill_rainbow( leds, NUM_LEDS, gHue, 7);
@@ -725,17 +722,17 @@ void cylon(){
   static uint16_t num = 0;
   static bool runonce = false; // Used to turn on the saber only 'once' while you hold the button.
   static uint32_t mytime = millis();
-  static uint16_t mydelay = 20; // Change this to speed up/slow down your led effect.  
-  
-   if (ls_state) {      
+  static uint16_t mydelay = 20; // Change this to speed up/slow down your led effect.
+
+   if (ls_state) {
  static uint8_t hue = 0;
  // Serial.print("x");
   // First slide the led in one direction
   for(int i = 0; i < NUM_LEDS; i++) {
-    // Set the i'th led to red 
+    // Set the i'th led to red
     leds[i] = CHSV(hue++, 255, 255);
     // Show the leds
-    FastLED.show(); 
+    FastLED.show();
     // now that we've shown the leds, reset the i'th led to black
     // leds[i] = CRGB::Black;
     fadeall();
@@ -744,9 +741,9 @@ void cylon(){
   }
 //  Serial.print("x");
 
-  // Now go in the other direction.  
+  // Now go in the other direction.
   for(int i = (NUM_LEDS)-1; i >= 0; i--) {
-    // Set the i'th led to red 
+    // Set the i'th led to red
     leds[i] = CHSV(hue++, 255, 255);
     // Show the leds
     FastLED.show();
@@ -768,7 +765,7 @@ void rainbowCycle() {
   static uint32_t mytime = millis();
   static uint16_t mydelay = 20; // Change this to speed up/slow down your led effect.
     for (int i = 0; i < NUM_LEDS; i++) {
-          leds[i] = dupe[i]; 
+          leds[i] = dupe[i];
         }
    if (ls_state) {
   //for(j=0; j<256*5; j++) { // 5 cycles of all colors on wheel
@@ -784,7 +781,7 @@ void rainbowCycle() {
 
 byte * Wheel(byte WheelPos) {
   static byte c[3];
-  
+
   if(WheelPos < 85) {
    c[0]=WheelPos * 3;
    c[1]=255 - WheelPos * 3;
@@ -810,13 +807,13 @@ void fadeall() {
 }
 
 
-void muteAll(int x){ 
+void muteAll(int x){
   if(x == 1) playHum.stop();        //saber hum
   if(x == 2) playStrike1.stop();    //Strike
   if(x == 3) playStrike2.stop();    //Strike S
   if(x == 4) playSwing1.stop();     //Swing
   if(x == 5) playSwing2.stop();     //Swing L
-  
+
   if(x == 6){
 	  playBoot.stop();
     playHum.stop();        //saber hum
