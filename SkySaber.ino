@@ -55,7 +55,7 @@
 #define SDCARD_MISO_PIN  12
 
 #define freePin13        13
-
+ 
 #define SDCARD_SCK_PIN   14
 #define SDCARD_CS_PIN    15
 
@@ -190,15 +190,28 @@ char BUFFER[10];
 
 void setup() {
   delay(2000);
- // FastLED.addLeds<WS2811, 19, RGB>(leds, 0,2).setCorrection(TypicalLEDStrip);
-    FastLED.addLeds<WS2812B, 18, GRB>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
-  //FastLED.addLeds<WS2812B, 18, GRB>(leds, 2, NUM_LEDS).setCorrection(TypicalLEDStrip);
+  FastLED.addLeds<WS2811, 19, RGB>(leds, 0,2).setCorrection(TypicalLEDStrip);
+  //  FastLED.addLeds<WS2812B, 18, GRB>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
+  FastLED.addLeds<WS2812B, 18, GRB>(leds, 2, NUM_LEDS).setCorrection(TypicalLEDStrip);
   FastLED.setBrightness(96);  // ~40% of LED strip brightness
 
-  Wire.begin();
+      fill_solid(leds, NUM_LEDS+2,  CHSV(hue, 255, 255) );
+      FastLED.show();
+      delay(2000);
+       fill_solid(leds, NUM_LEDS+2,  CHSV(100, 255, 255) );
+      FastLED.show();
+      delay(2000);
+      fill_solid(leds, NUM_LEDS+2,  CHSV(150, 255, 255) );
+      FastLED.show();
+      delay(2000);
   Wire.setSCL(IMUSCL);
   Wire.setSDA(IMUSDA);
-
+  Wire.begin();
+  
+  SPI.setMOSI(SDCARD_MOSI_PIN); 
+  SPI.setMISO(SDCARD_MISO_PIN); 
+  SPI.setSCK(SDCARD_SCK_PIN);
+  
   Serial.begin(9600);
   Serial.println("Booting up");
 
@@ -209,9 +222,13 @@ void setup() {
 
   pinMode(ENABLE_AMP_PIN,  INPUT_PULLUP);
   digitalWrite(ENABLE_AMP_PIN, HIGH);
- // pinMode(ENABLE_5V_PIN,  INPUT_PULLUP);
-  //digitalWrite(ENABLE_5V_PIN, HIGH);
+  pinMode(ENABLE_5V_PIN,  INPUT_PULLUP);
+  digitalWrite(ENABLE_5V_PIN, HIGH);
 
+    fill_solid(leds, NUM_LEDS+2,  CHSV(50, 255, 255) );
+      FastLED.show();
+      delay(2000);
+      
     // For MPU6050
  /* accelgyro.initialize();
   accelgyro.setFullScaleAccelRange(MPU6050_ACCEL_FS_16);
@@ -228,38 +245,31 @@ void setup() {
 
   accelgyro.begin();
 
-    // SD initialization
-
-//  if (DEBUG) {
-//    if (SD.begin(15)) Serial.println(F("SD OK"));
-//    else Serial.println(F("SD fail"));
-//  } else {
-//    SD.begin(15);
-//  }
-
-
-
-//   if (!(SD.begin(15))) {
-//    // stop here, but print a message repetitively
-//    while (1) {
-//      leds[1] = CHSV(240, 255, 255);
-//          FastLED.show();
-//      Serial.println("Unable to access the SD card");
-//      delay(500);
-//    }
-//  }
+    fill_solid(leds, NUM_LEDS+2,  CHSV(50, 255, 255) );
+      FastLED.show();
+      delay(2000);
+      
+// SD initialization
+   if (!(SD.begin(15))) {
+    // stop here, but print a message repetitively
+    while (1) {
+      leds[1] = CHSV(240, 255, 255);
+          FastLED.show();
+      Serial.println("Unable to access the SD card");
+      delay(500);
+    }
+  }
 
  // FastLED.setBrightness(BRIGHTNESS);   // set bright
  // leds[0] = CHSV(hue, 255, 255);
  // FastLED.show();
 
-//  dac1.analogReference(EXTERNAL);
+  dac1.analogReference(EXTERNAL);
   AudioMemory(18);
 
   //Bluetooth begin
   Serial1.begin(38400);
   //Bluetooth
-
 /////////Bootup Checks
 /*
     for (int i = 0; i < NUM_LEDS; i++) {
@@ -297,6 +307,7 @@ btn=0; rgb =0;
 
     bootCheck =0;
     */
+
 }
 
 
@@ -306,20 +317,20 @@ btn=0; rgb =0;
 void loop() {
 
   FastLED.setBrightness(100);
+//  fill_solid(leds, NUM_LEDS+2,  CHSV(hue, 255, 255) );
+//      FastLED.show();
 
-/*
   //randomPULSE();
   getFreq();
   Rx();
   on_off_sound();
-  btnTick();
-  rgbBtnTick();
+  btnTick();  rgbBtnTick();
   strikeTick();
   swingTick();
 
 switch (mode) {
-    case 0:
-      cycle();
+    case 0:      
+    cycle();
       break;
     case 1:
       randCycle();
@@ -337,13 +348,13 @@ switch (mode) {
       cylon();
       break;
   }
-*/
 
+//hue++;
  string="";
   }
 
 // --- MAIN LOOP---
-/* 
+
 void Rx(){
 
   if (Serial1.available()){
@@ -352,9 +363,9 @@ void Rx(){
             }
    Serial1.flush();
   }
-*/
+
   
-/*
+
 void rgbBtnTick() {
   rgbBtnState = !digitalRead(RGBBTN);
   if ( (rgbBtnState && !rgb_btn_flag) || (string == "rgbx1") ){
@@ -393,9 +404,9 @@ void rgbBtnTick() {
       }
 
   }
- */
  
-/* 
+ 
+
 void btnTick() {
   btnState = !digitalRead(BTN);
   if ( (btnState && !btn_flag) || (string == "btnx1") ) {
@@ -442,8 +453,7 @@ void btnTick() {
     btn_counter = 0;
   }
 }
- */
-/* 
+
 void on_off_sound() {
   if (ls_chg_state) {                // if change flag
     if (!ls_state) {                 // if SkySaber is turned off
@@ -490,9 +500,9 @@ void on_off_sound() {
     bzzTimer = millis();
   }
 }
-/* */
 
-/* 
+
+
 void randomPULSE() {
   if (PULSE_ALLOW && ls_state && (millis() - PULSE_timer > PULSE_DELAY)) {
     PULSE_timer = millis();
@@ -504,9 +514,9 @@ void randomPULSE() {
     setAll(redOffset, greenOffset, blueOffset);
   }
 }
-*/
 
-/* 
+
+ 
 void strikeTick() {
   if ((ACC > STRIKE_THR) && (ACC < STRIKE_S_THR)) {
   //  if (!mute) noToneAC();
@@ -537,9 +547,9 @@ void strikeTick() {
     strike_flag = 1;
   }
 }
- */
+ 
 
-/* 
+
 void swingTick() {
   if (GYR > 80 && (millis() - swing_timeout > 100) && !mute) {
     swing_timeout = millis();
@@ -567,9 +577,9 @@ void swingTick() {
     }
   }
 }
-*/
 
-/* 
+
+
 void getFreq() {
  // if (ls_state) {                                               // if SkySaber is on
     if (millis() - mpuTimer > 500) {
@@ -611,24 +621,24 @@ void getFreq() {
     }
  // }
 }
-*/
-/* 
+
+
 void setPixel(int Pixel, byte red, byte green, byte blue) {
   leds[Pixel].r = red;
   leds[Pixel].g = green;
   leds[Pixel].b = blue;
 }
-*/
-/* 
+
+
 void setAll(byte red, byte green, byte blue) {
   for (int i = 0; i < NUM_LEDS; i++ ) {
     setPixel(i, red, green, blue);
   }
   FastLED.show();
 }
-*/
 
-/* 
+
+
 void light_up() {
 
   if (mode==3){
@@ -648,9 +658,9 @@ void light_up() {
         }
   }
 }
-*/
 
-/* 
+
+
 void light_down() {
   for (int i = NUM_LEDS ; i >= 1 ; i--) {
 	  	 // hue=dupe[i];
@@ -659,9 +669,9 @@ void light_down() {
           delay(20);
         }
 }
-*/
 
-/* 
+
+ 
 void hit_flash() {
   for (int i = 0; i < NUM_LEDS; i++) {
           leds[i]= -leds[i];
@@ -673,9 +683,9 @@ void hit_flash() {
         }
    FastLED.show();
 }
-*/
 
-/* 
+
+ 
 void cycle() {
 
   if ((string.equals("rgbHold") || rgb_hold_flag))
@@ -699,9 +709,9 @@ void cycle() {
   }
 
 }
-*/
 
-/* 
+
+
 void randCycle(){
 
     hue++;
@@ -715,17 +725,16 @@ void randCycle(){
     }
     FastLED.show();
   }
-*/
 
-/* 
+
 void rainbow()
 {
   // FastLED's built-in rainbow generator
   fill_rainbow( leds, NUM_LEDS, gHue, 7);
 }
-*/
 
-/* 
+
+ 
 void sinelon()
 {
   static uint16_t num = 0;
@@ -744,9 +753,9 @@ void sinelon()
    }
   FastLED.show();
 }
-*/
 
-/* 
+
+
 void cylon(){
   static uint16_t num = 0;
   static bool runonce = false; // Used to turn on the saber only 'once' while you hold the button.
@@ -785,15 +794,14 @@ void cylon(){
    }
   FastLED.show();
 }
-*/
 
-/* 
+
+ 
 void rainbowCycle() {
   byte *c;
   uint16_t i, j;
   static uint16_t num = 0;
-  stati
-  c bool runonce = false; // Used to turn on the saber only 'once' while you hold the button.
+  static bool runonce = false; // Used to turn on the saber only 'once' while you hold the button.
   static uint32_t mytime = millis();
   static uint16_t mydelay = 20; // Change this to speed up/slow down your led effect.
     for (int i = 0; i < NUM_LEDS; i++) {
@@ -831,17 +839,17 @@ byte * Wheel(byte WheelPos) {
   }
   return c;
 }
-*/
 
-/* 
+
+
 void fadeall() {
   for (uint16_t i = 0; i < NUM_LEDS; i++) {
     leds[i].nscale8(250);
   }
 }
-*/
 
-/* 
+
+ 
 void muteAll(int x){
   if(x == 1) playHum.stop();        //saber hum
   if(x == 2) playStrike1.stop();    //Strike
@@ -859,4 +867,3 @@ void muteAll(int x){
   }
 }
 
-/* */
