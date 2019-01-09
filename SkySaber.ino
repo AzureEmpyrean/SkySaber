@@ -8,13 +8,13 @@
 #include "SD.h"
 #include "Wire.h"
 #include "I2Cdev.h"
-//#include "MPU6050.h"
+#include "MPU6050.h"
 #include "FastLED.h"        // addressable LED library
 #include "Audio.h"
 #include "SPI.h"
 
 #include "SerialFlash.h"
-#include <SparkFunLSM6DS3.h>
+//#include <SparkFunLSM6DS3.h>
 
 
 
@@ -48,8 +48,8 @@
 #define freePin7           7
 
 #define ENABLE_5V_PIN     8
-#define LED_PIN           19          //button
-#define LED_PIN2          18         //blade
+#define LED_PIN           9          //button
+#define LED_PIN2          10         //blade
 
 #define SDCARD_MOSI_PIN  11
 #define SDCARD_MISO_PIN  12
@@ -58,9 +58,6 @@
  
 #define SDCARD_SCK_PIN   14
 #define SDCARD_CS_PIN    15
-
-#define IMUSCL           16
-#define IMUSDA           17
 
 #define freePin20        20
 #define fetPin           21
@@ -94,9 +91,9 @@ AudioConnection          patchCord8(mixer2, dac1);
 
 CRGB leds[NUM_LEDS];
 CRGB dupe[NUM_LEDS];
-//MPU6050 accelgyro;
+MPU6050 accelgyro;
 
-LSM6DS3 accelgyro(I2C_MODE, 0x6A);
+//LSM6DS3 accelgyro(I2C_MODE, 0x6A);
 
 const int chipSelect = 8;
 
@@ -117,7 +114,7 @@ unsigned long btn_timer, rgb_btn_timer, PULSE_timer, swing_timer, swing_timeout,
 byte nowNumber;
 byte LEDcolor;  // 0 - red, 1 - green, 2 - blue, 3 - pink, 4 - yellow, 5 - ice blue
 byte nowColor, red, green, blue, redOffset, greenOffset, blueOffset;
-boolean swing_flag, swing_allow, strike_flag, mute=false;
+boolean swing_flag, swing_allow, strike_flag, mute=true;
 float voltage;
 int PULSEOffset;
 int hue = 0;
@@ -204,14 +201,11 @@ void setup() {
       fill_solid(leds, NUM_LEDS+2,  CHSV(150, 255, 255) );
       FastLED.show();
       delay(2000);
-  Wire.setSCL(IMUSCL);
-  Wire.setSDA(IMUSDA);
-  Wire.begin();
   
   SPI.setMOSI(SDCARD_MOSI_PIN); 
   SPI.setMISO(SDCARD_MISO_PIN); 
   SPI.setSCK(SDCARD_SCK_PIN);
-  
+  Wire.begin();
   Serial.begin(9600);
   Serial.println("Booting up");
 
@@ -228,9 +222,11 @@ void setup() {
     fill_solid(leds, NUM_LEDS+2,  CHSV(50, 255, 255) );
       FastLED.show();
       delay(2000);
+
+
       
     // For MPU6050
- /* accelgyro.initialize();
+   accelgyro.initialize();
   accelgyro.setFullScaleAccelRange(MPU6050_ACCEL_FS_16);
   accelgyro.setFullScaleGyroRange(MPU6050_GYRO_FS_250);
   if (DEBUG) {
@@ -241,24 +237,20 @@ void setup() {
       Serial.println(F("MPU6050 fail"));
     }
   }
-  */
-
-  accelgyro.begin();
-
     fill_solid(leds, NUM_LEDS+2,  CHSV(50, 255, 255) );
       FastLED.show();
       delay(2000);
       
 // SD initialization
-   if (!(SD.begin(15))) {
-    // stop here, but print a message repetitively
-    while (1) {
-      leds[1] = CHSV(240, 255, 255);
-          FastLED.show();
-      Serial.println("Unable to access the SD card");
-      delay(500);
-    }
-  }
+//   if (!(SD.begin(15))) {
+//    // stop here, but print a message repetitively
+//    while (1) {
+//      leds[1] = CHSV(240, 255, 255);
+//          FastLED.show();
+//      Serial.println("Unable to access the SD card");
+//      delay(500);
+//    }
+//  }
 
  // FastLED.setBrightness(BRIGHTNESS);   // set bright
  // leds[0] = CHSV(hue, 255, 255);
@@ -268,7 +260,7 @@ void setup() {
   AudioMemory(18);
 
   //Bluetooth begin
-  Serial1.begin(38400);
+  Serial1.begin(9600);
   //Bluetooth
 /////////Bootup Checks
 /*
@@ -324,7 +316,8 @@ void loop() {
   getFreq();
   Rx();
   on_off_sound();
-  btnTick();  rgbBtnTick();
+  btnTick();  
+  rgbBtnTick();
   strikeTick();
   swingTick();
 
@@ -359,8 +352,10 @@ void Rx(){
 
   if (Serial1.available()){
        string = Serial1.readStringUntil('\n');
-             string.trim();
+             string.trim();            
+             Serial.println(string);
             }
+
    Serial1.flush();
   }
 
@@ -465,9 +460,7 @@ void on_off_sound() {
         bzzz_flag = 1;
         ls_state = true;               // remember that turned on
 
-        if (!mute) {
-          playHum.play("HUM.wav");
-        } else {
+        if (mute) {
           muteAll(6);
         }
         playBoot.stop();
@@ -516,7 +509,7 @@ void randomPULSE() {
 }
 
 
- 
+
 void strikeTick() {
   if ((ACC > STRIKE_THR) && (ACC < STRIKE_S_THR)) {
   //  if (!mute) noToneAC();
@@ -525,11 +518,13 @@ void strikeTick() {
     strcpy_P(BUFFER, (char*)pgm_read_word(&(strikes_short[nowNumber])));
   playStrike1.play(BUFFER);
     hit_flash();
+    Serial.println("STRIKE ONE!!!");
     if (mute)
       bzzTimer = millis() + strike_s_time[nowNumber] - FLASH_DELAY;
     else
       humTimer = millis() - 9000 + strike_s_time[nowNumber] - FLASH_DELAY;
     strike_flag = 1;
+   // delay(1000);
   }
 
 
@@ -540,11 +535,13 @@ void strikeTick() {
     strcpy_P(BUFFER, (char*)pgm_read_word(&(strikes[nowNumber])));
    playStrike2.play(BUFFER);
     hit_flash();
+    Serial.println("STRIKE TWO!!!");
     if (!mute)
       bzzTimer = millis() + strike_time[nowNumber] - FLASH_DELAY;
     else
       humTimer = millis() - 9000 + strike_time[nowNumber] - FLASH_DELAY;
     strike_flag = 1;
+   // delay(1000);
   }
 }
  
@@ -575,21 +572,19 @@ void swingTick() {
         swing_allow = 0;
       }
     }
-  }
+   }
 }
 
-
-
 void getFreq() {
- // if (ls_state) {                                               // if SkySaber is on
+  if (ls_state) {                                               // if SkySaber is on
     if (millis() - mpuTimer > 500) {
-     // accelgyro.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
-     ax =accelgyro.readFloatAccelX();
-     ay =accelgyro.readFloatAccelY();
-     az =accelgyro.readFloatAccelZ();
-     gx =accelgyro.readFloatGyroX();
-     gy =accelgyro.readFloatGyroY();
-     gz =accelgyro.readFloatGyroZ();
+      accelgyro.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
+//     ax =accelgyro.readFloatAccelX();
+//     ay =accelgyro.readFloatAccelY();
+//     az =accelgyro.readFloatAccelZ();
+//     gx =accelgyro.readFloatGyroX();
+//     gy =accelgyro.readFloatGyroY();
+//     gz =accelgyro.readFloatGyroZ();
       // find absolute and divide on 100
       gyroX = abs(gx );
       gyroY = abs(gy );
@@ -599,7 +594,7 @@ void getFreq() {
       accelZ = abs(az );
 
       // vector sum
-      ACC = sq((long)accelX) + sq((long)accelY) + sq((long)accelZ);
+      ACC = (accelX) + (accelY) + (accelZ);
       ACC = sqrt(ACC);
       GYR = sq((long)gyroX) + sq((long)gyroY) + sq((long)gyroZ);
       GYR = sqrt((long)GYR);
@@ -613,13 +608,14 @@ void getFreq() {
 //         Serial.print(" ");
 //         Serial.print(gyroZ);
 //         Serial.println(";");
-
+   //      Serial.print("ACC:  ");
+ //        Serial.println(ACC);
       freq = (long)COMPL * COMPL / 1500;                        // parabolic tone change
       freq = constrain(freq, 18, 300);
       freq_f = freq * k + freq_f * (1 - k);                     // smooth filter
         mpuTimer = micros();
     }
- // }
+  }
 }
 
 
