@@ -107,7 +107,8 @@ int gyroX, gyroY, gyroZ, accelX, accelY, accelZ, freq, freq_f = 0;
 float k = 0.2;
 unsigned long humTimer = -9000, mpuTimer, nowTimer;
 int stopTimer;
-boolean bzzz_flag, ls_chg_state, ls_state;
+int ls_chg_state = 0;
+boolean bzzz_flag, ls_state;
 boolean btnState, btn_flag, hold_flag, rgbBtnState, rgb_btn_flag, rgb_hold_flag;
 byte btn_counter, rgb_btn_counter;
 unsigned long btn_timer, rgb_btn_timer, PULSE_timer, swing_timer, swing_timeout, battery_timer, bzzTimer;
@@ -309,17 +310,20 @@ btn=0; rgb =0;
 void loop() {
 
   FastLED.setBrightness(100);
-//  fill_solid(leds, NUM_LEDS+2,  CHSV(hue, 255, 255) );
-//      FastLED.show();
-
+  fill_solid(leds, NUM_LEDS+2,  CHSV(hue, 255, 255) );
+  FastLED.show();
+ // Serial.print("state ");
+ // Serial.println(ls_state);
+  Serial.print("chg state ");
+  Serial.println(ls_chg_state);
   //randomPULSE();
   getFreq();
   Rx();
   on_off_sound();
-  btnTick();  
+  //btnTick();  
   rgbBtnTick();
-  strikeTick();
-  swingTick();
+//  strikeTick();
+ // swingTick();
 
 switch (mode) {
     case 0:      
@@ -342,7 +346,7 @@ switch (mode) {
       break;
   }
 
-//hue++;
+hue++;
  string="";
   }
 
@@ -369,9 +373,6 @@ void rgbBtnTick() {
     rgb_btn_counter++;
     rgb_btn_timer = millis();
 
-    if(bootCheck==1){
-      hit_flash();
-    }
   }
 
   if ((!rgbBtnState && rgb_btn_flag)){
@@ -418,20 +419,15 @@ void btnTick() {
   if ( (btn_flag && btnState && (millis() - btn_timer > BTN_TIMEOUT) && !hold_flag) || (string == "btnHold")){
     hold_flag = 1;
     btn_counter = 0;
-
-    if(bootCheck==1){
-      btn=1;
-    }
   }
 
   if ( ((millis() - btn_timer > BTN_TIMEOUT) && (btn_counter != 0)) || (string == "btnx1") || (string == "btnx3") || (string == "btnx5") ) {
 
     if (btn_counter == 1) {
+      Serial.println("BTN");
           ls_chg_state = 1;                     // flag to change saber state (on/off)
-          if(bootCheck ==1){
-              hit_flash();
-                 }
-    }
+        }
+    
     if ((btn_counter == 3) || (string == "btnx3")){               // 3 press count
         mode++;                         // change mode
         if (mode > modeCt) mode = 0;
@@ -450,8 +446,8 @@ void btnTick() {
 }
 
 void on_off_sound() {
-  if (ls_chg_state) {                // if change flag
-    if (!ls_state) {                 // if SkySaber is turned off
+  if (ls_chg_state==1) {                // if change flag
+    if (ls_state==0) {                 // if SkySaber is turned off
         if (DEBUG) Serial.println(F("SABER ON"));
        playBoot.play("ON.wav");
         delay(200);
