@@ -24,7 +24,7 @@
 // ---------------------------- SETTINGS -------------------------------
 #define NUM_LEDS 70         // number of leds
 #define BTN_TIMEOUT 600     // button hold delay, ms
-#define RGB_BTN_TIMEOUT 400     // button hold delay, ms
+#define RGB_BTN_TIMEOUT 150     // button hold delay, ms
 #define BRIGHTNESS 155      // max LED brightness (0 - 255)
 
 #define SWING_TIMEOUT 300   // timeout between swings
@@ -107,8 +107,8 @@ int gyroX, gyroY, gyroZ, accelX, accelY, accelZ, freq, freq_f = 0;
 float k = 0.2;
 unsigned long humTimer = -9000, mpuTimer, nowTimer;
 int stopTimer;
-int ls_chg_state = 0;
-boolean bzzz_flag, ls_state;
+//int dummy = 0;
+boolean bzzz_flag, ls_chg_state = false, ls_state, dummy =false;
 boolean btnState, btn_flag, hold_flag, rgbBtnState, rgb_btn_flag, rgb_hold_flag;
 byte btn_counter, rgb_btn_counter;
 unsigned long btn_timer, rgb_btn_timer, PULSE_timer, swing_timer, swing_timeout, battery_timer, bzzTimer;
@@ -119,7 +119,7 @@ boolean swing_flag, swing_allow, strike_flag, mute=true;
 float voltage;
 int PULSEOffset;
 int hue = 0;
-int mode = 0;
+int mode = 1;
 uint8_t gHue = 0;
 
 String string;
@@ -188,9 +188,9 @@ char BUFFER[10];
 
 void setup() {
   delay(2000);
-  FastLED.addLeds<WS2811, 19, RGB>(leds, 0,2).setCorrection(TypicalLEDStrip);
+  FastLED.addLeds<WS2811, LED_PIN2, RGB>(leds, 0,2).setCorrection(TypicalLEDStrip);
   //  FastLED.addLeds<WS2812B, 18, GRB>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
-  FastLED.addLeds<WS2812B, 18, GRB>(leds, 2, NUM_LEDS).setCorrection(TypicalLEDStrip);
+  FastLED.addLeds<WS2812B, LED_PIN, GRB>(leds, 2, NUM_LEDS).setCorrection(TypicalLEDStrip);
   FastLED.setBrightness(96);  // ~40% of LED strip brightness
 
       fill_solid(leds, NUM_LEDS+2,  CHSV(hue, 255, 255) );
@@ -227,7 +227,7 @@ void setup() {
 
       
     // For MPU6050
-   accelgyro.initialize();
+  accelgyro.initialize();
   accelgyro.setFullScaleAccelRange(MPU6050_ACCEL_FS_16);
   accelgyro.setFullScaleGyroRange(MPU6050_GYRO_FS_250);
   if (DEBUG) {
@@ -238,6 +238,7 @@ void setup() {
       Serial.println(F("MPU6050 fail"));
     }
   }
+  
     fill_solid(leds, NUM_LEDS+2,  CHSV(50, 255, 255) );
       FastLED.show();
       delay(2000);
@@ -308,27 +309,27 @@ btn=0; rgb =0;
 
 // --- MAIN LOOP---
 void loop() {
-
-  FastLED.setBrightness(100);
-  fill_solid(leds, NUM_LEDS+2,  CHSV(hue, 255, 255) );
-  FastLED.show();
+  //Serial.println(dummy);  
+//  Serial.println(ls_chg_state);
+ // FastLED.setBrightness(100);
+//  fill_solid(leds, NUM_LEDS+2,  CHSV(hue, 255, 255) );
+//  FastLED.show();
  // Serial.print("state ");
  // Serial.println(ls_state);
-  Serial.print("chg state ");
-  Serial.println(ls_chg_state);
+ // Serial.print("chg state ");
+
   //randomPULSE();
   getFreq();
   Rx();
   on_off_sound();
-  //btnTick();  
+  btnTick();  
   rgbBtnTick();
-//  strikeTick();
- // swingTick();
-
+  strikeTick();
+  swingTick();
+  
 switch (mode) {
-    case 0:      
-    cycle();
-      break;
+    default: 
+      cycle();
     case 1:
       randCycle();
       break;
@@ -345,8 +346,6 @@ switch (mode) {
       cylon();
       break;
   }
-
-hue++;
  string="";
   }
 
@@ -378,18 +377,20 @@ void rgbBtnTick() {
   if ((!rgbBtnState && rgb_btn_flag)){
     rgb_btn_flag = 0;
     rgb_hold_flag = 0;
+    
   }
 
    if ( (rgb_btn_flag && rgbBtnState && (millis() - rgb_btn_timer > RGB_BTN_TIMEOUT) && !hold_flag)) {
     rgb_hold_flag = 1;
     rgb_btn_counter = 0;
-    if(bootCheck==1){
-      rgb=1;
-    }
+    //Serial.println("holding");
+
   }
 
   if ( ((millis() - rgb_btn_timer > BTN_TIMEOUT) && (rgb_btn_counter != 0)) || (string == "rgbx3") || (string == "rgbx5") ) {
-
+    if (rgb_btn_counter == 1) {               // 3 press count
+        Serial.println("RGB BTN");
+      }
       if (rgb_btn_counter == 3) {               // 3 press count
 
       }
@@ -425,7 +426,8 @@ void btnTick() {
 
     if (btn_counter == 1) {
       Serial.println("BTN");
-          ls_chg_state = 1;                     // flag to change saber state (on/off)
+      dummy = 1;
+          //ls_chg_state = 1;                     // flag to change saber state (on/off)
         }
     
     if ((btn_counter == 3) || (string == "btnx3")){               // 3 press count
@@ -446,7 +448,7 @@ void btnTick() {
 }
 
 void on_off_sound() {
-  if (ls_chg_state==1) {                // if change flag
+  if (dummy==1) {                // if change flag
     if (ls_state==0) {                 // if SkySaber is turned off
         if (DEBUG) Serial.println(F("SABER ON"));
        playBoot.play("ON.wav");
@@ -471,7 +473,8 @@ void on_off_sound() {
     if (DEBUG) Serial.println(F("SABER OFF"));
       ls_state = false;
     }
-    ls_chg_state = 0;
+    dummy = 0;
+    //ls_chg_state = 0;
   }
 
   if (((millis() - humTimer) > 9000) && bzzz_flag && !mute) {
@@ -679,25 +682,25 @@ void hit_flash() {
 
  
 void cycle() {
-
-  if ((string.equals("rgbHold") || rgb_hold_flag))
+hue++;
+  if (rgb_hold_flag==0 || string.equals("rgbHold"))
   {
     Serial.println(hue);
     hue++;
     if (hue>=256) hue=0;
     if (!ls_state) {
       leds[0] = CHSV(hue, 255, 255);
-
+      leds[1] = CHSV(hue, 255, 255);
     }
     if (ls_state) {
-      fill_solid(leds, NUM_LEDS,  CHSV(hue, 255, 255) );
+      fill_solid(leds, NUM_LEDS+2,  CHSV(hue, 255, 255) );
       FastLED.show();
     }
        for (int i = 0; i < NUM_LEDS; i++) {
           dupe[i] = leds[i];
         }
      FastLED.show();
-    delay(60);
+    FastLED.delay(60);
   }
 
 }
