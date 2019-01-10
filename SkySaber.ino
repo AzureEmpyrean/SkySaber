@@ -37,7 +37,7 @@
 #define PULSE_ALLOW 1       // blade pulsation (1 - allow, 0 - disallow)
 #define PULSE_AMPL 20       // pulse amplitude
 #define PULSE_DELAY 30      // delay between pulses
-#define modeCt 3
+#define modeCt 6
 #define DEBUG 1             // debug information in Serial (1 - allow, 0 - disallow)
 // ---------------------------- SETTINGS -------------------------------
 
@@ -187,19 +187,24 @@ char BUFFER[10];
 // --------------------------------- SOUNDS ---------------------------------
 
 void setup() {
-  delay(2000);
+  delay(1000);
   FastLED.addLeds<WS2811, LED_PIN2, RGB>(leds, 0,2).setCorrection(TypicalLEDStrip);
   //  FastLED.addLeds<WS2812B, 18, GRB>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
-  FastLED.addLeds<WS2812B, LED_PIN, GRB>(leds, 2, NUM_LEDS).setCorrection(TypicalLEDStrip);
+  FastLED.addLeds<WS2812B, LED_PIN, GRB>(leds, 2, NUM_LEDS-2).setCorrection(TypicalLEDStrip);
   FastLED.setBrightness(96);  // ~40% of LED strip brightness
-
-      fill_solid(leds, NUM_LEDS+2,  CHSV(hue, 255, 255) );
+  
+  pinMode(ENABLE_AMP_PIN,  INPUT_PULLUP);
+  digitalWrite(ENABLE_AMP_PIN, HIGH);
+  pinMode(ENABLE_5V_PIN,  INPUT_PULLUP);
+  digitalWrite(ENABLE_5V_PIN, HIGH);
+  
+      fill_solid(leds, NUM_LEDS,  CHSV(hue, 255, 255) );
       FastLED.show();
       delay(2000);
-       fill_solid(leds, NUM_LEDS+2,  CHSV(100, 255, 255) );
+       fill_solid(leds, NUM_LEDS,  CHSV(100, 255, 255) );
       FastLED.show();
       delay(2000);
-      fill_solid(leds, NUM_LEDS+2,  CHSV(150, 255, 255) );
+      fill_solid(leds, NUM_LEDS,  CHSV(150, 255, 255) );
       FastLED.show();
       delay(2000);
   
@@ -215,14 +220,10 @@ void setup() {
 
   randomSeed(analogRead(2));    // starting point for random generator
 
-  pinMode(ENABLE_AMP_PIN,  INPUT_PULLUP);
-  digitalWrite(ENABLE_AMP_PIN, HIGH);
-  pinMode(ENABLE_5V_PIN,  INPUT_PULLUP);
-  digitalWrite(ENABLE_5V_PIN, HIGH);
 
-    fill_solid(leds, NUM_LEDS+2,  CHSV(50, 255, 255) );
+    fill_solid(leds, NUM_LEDS,  CHSV(50, 255, 255) );
       FastLED.show();
-      delay(2000);
+      //delay(2000);
 
 
       
@@ -239,7 +240,7 @@ void setup() {
     }
   }
   
-    fill_solid(leds, NUM_LEDS+2,  CHSV(50, 255, 255) );
+    fill_solid(leds, NUM_LEDS,  CHSV(50, 255, 255) );
       FastLED.show();
       delay(2000);
       
@@ -328,21 +329,21 @@ void loop() {
   swingTick();
   
 switch (mode) {
-    default: 
+    case 1: 
       cycle();
-    case 1:
+    case 2:
       randCycle();
       break;
-    case 2:
+    case 3:
       rainbowCycle();
       break;
-    case 3:
+    case 4:
       rainbow();
       break;
-    case 4:
+    case 5:
       sinelon();
       break;
-   case 5:
+   case 6:
       cylon();
       break;
   }
@@ -432,7 +433,7 @@ void btnTick() {
     
     if ((btn_counter == 3) || (string == "btnx3")){               // 3 press count
         mode++;                         // change mode
-        if (mode > modeCt) mode = 0;
+        if (mode > modeCt) mode = 1;
       }
 
       if ((btn_counter == 5)  || (string == "btnx5")) {               // 5 press count
@@ -637,7 +638,7 @@ void setAll(byte red, byte green, byte blue) {
 void light_up() {
 
   if (mode==3){
-	  for (int i = 0; i < NUM_LEDS; i++) {
+	  for (int i = 2; i < NUM_LEDS; i++) {
 		  	  	// hue=dupe[i];
 	            leds[i] = dupe[i];
 	            FastLED.show();
@@ -645,7 +646,7 @@ void light_up() {
 	          }
   }
   else{
-  for (int i = 0; i < NUM_LEDS; i++) {
+  for (int i = 2; i < NUM_LEDS; i++) {
           leds[i] = CHSV(hue, 255, 255);
           dupe[i] = CHSV(hue, 255, 255);
           FastLED.show();
@@ -657,7 +658,7 @@ void light_up() {
 
 
 void light_down() {
-  for (int i = NUM_LEDS ; i >= 1 ; i--) {
+  for (int i = NUM_LEDS ; i >= 2 ; i--) {
 	  	 // hue=dupe[i];
           leds[i] = CHSV(hue, 255, 0);
           FastLED.show();
@@ -682,7 +683,6 @@ void hit_flash() {
 
  
 void cycle() {
-hue++;
   if (rgb_hold_flag==0 || string.equals("rgbHold"))
   {
     Serial.println(hue);
@@ -693,7 +693,7 @@ hue++;
       leds[1] = CHSV(hue, 255, 255);
     }
     if (ls_state) {
-      fill_solid(leds, NUM_LEDS+2,  CHSV(hue, 255, 255) );
+      fill_solid(leds, NUM_LEDS,  CHSV(hue, 255, 255) );
       FastLED.show();
     }
        for (int i = 0; i < NUM_LEDS; i++) {
@@ -712,7 +712,10 @@ void randCycle(){
     hue++;
     delay(10);
 
-    if (!ls_state) leds[0] = CHSV(hue, 255, 255);
+    if (!ls_state) {
+      leds[0] = CHSV(hue, 255, 255);
+      leds[1] = CHSV(hue, 255, 255);
+    }
 
     if (ls_state) {
       fill_solid(leds, NUM_LEDS,  CHSV(hue, 255, 255) );
@@ -740,7 +743,7 @@ void sinelon()
    if (ls_state) {
       // a colored dot sweeping back and forth, with fading trails
       fadeToBlackBy( leds, NUM_LEDS, 2);
-      int pos = beatsin16( 13, 0, NUM_LEDS - 1 );
+      int pos = beatsin16( 13, 0, NUM_LEDS - 2 );
       leds[pos] += CHSV( gHue, 255, 192);
       EVERY_N_MILLISECONDS( 8 ) {
         gHue++;
@@ -761,7 +764,7 @@ void cylon(){
  static uint8_t hue = 0;
  // Serial.print("x");
   // First slide the led in one direction
-  for(int i = 0; i < NUM_LEDS; i++) {
+  for(int i = 2; i < NUM_LEDS; i++) {
     // Set the i'th led to red
     leds[i] = CHSV(hue++, 255, 255);
     // Show the leds
@@ -775,7 +778,7 @@ void cylon(){
 //  Serial.print("x");
 
   // Now go in the other direction.
-  for(int i = (NUM_LEDS)-1; i >= 0; i--) {
+  for(int i = NUM_LEDS; i >= 2; i--) {
     // Set the i'th led to red
     leds[i] = CHSV(hue++, 255, 255);
     // Show the leds
